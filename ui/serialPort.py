@@ -3,6 +3,7 @@
 import serial
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 import convert
 
@@ -29,8 +30,9 @@ class SerialPortClass(QWidget):
         # 串口号选择
         self.portLabel = QLabel("串口选择",self)
         self.portBox = QComboBox(self)
-        for i in range(8):
-            self.portBox.addItem("COM" + str(i))
+        self.portBox.addItem("COM3")
+        # for i in range(8):
+        #     self.portBox.addItem("COM" + str(i))
 
         # 波特率选择
         self.baudRateLabel = QLabel("波特率选择", self)
@@ -80,7 +82,11 @@ class SerialPortClass(QWidget):
 
     # 保存脚印
     def saveData(self):
-        convert.saveImgFromSerial(self.serial)
+        convertProcessObject = convert.ConvertProcessDlg()
+        convertProcessObject.setWindowIcon(QIcon("../icons/foot32.png"))
+        convertProcessObject.resize(400, 150)
+        convertProcessObject.show()
+        convertProcessObject.saveImgFromSerial(self.serial)
         QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
         self.serial.close() # 最后,关掉
         self.portStatus = False
