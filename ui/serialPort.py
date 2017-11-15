@@ -4,17 +4,20 @@ import serial
 
 from PyQt5.QtWidgets import *
 
-class SerialPort(QWidget):
+import convert
+class SerialPortClass(QWidget):
     def __init__(self):
         super().__init__()
         self.setupUi()
 
     def setupUi(self):
+        self.showButton()
         self.setupPort()
         self.connectSignalSlot()
 
     #连接信号与槽
     def connectSignalSlot(self):
+        self.startCollectButton.clicked[bool].connect(self.startCollect)
         self.portTestButton.clicked.connect(self.testPort)
 
     #初始化串口
@@ -34,9 +37,19 @@ class SerialPort(QWidget):
         self.baudRateBox.addItem("9600")
         self.baudRateBox.addItem("115200")
 
+    def showButton(self):
         # 测试串口按钮
         self.portTestButton= QPushButton("测试串口",self)
         self.portTestButton.setCheckable(True)
+
+        self.startCollectButton = QPushButton("开始采集", self)
+        self.startCollectButton.setCheckable(True)
+        self.stopCollectButton = QPushButton("停止采集", self)
+        self.stopCollectButton.setCheckable(True)
+        self.clearDataButton = QPushButton("清除", self)
+        self.clearDataButton.setCheckable(True)
+        self.saveDataButton = QPushButton("保存", self)
+        self.saveDataButton.setCheckable(True)
 
     #测试串口是否打开
     def testPort(self):
@@ -77,3 +90,15 @@ class SerialPort(QWidget):
         self.serial.close() # 最后,关掉
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
+
+    def setupLayout(self, fatherLayout):
+        fatherLayout.addWidget(self.portLabel)
+        fatherLayout.addWidget(self.portBox)
+        fatherLayout.addWidget(self.baudRateLabel)
+        fatherLayout.addWidget(self.baudRateBox)
+        fatherLayout.addWidget(self.portTestButton)
+
+        fatherLayout.addWidget(self.startCollectButton)
+        fatherLayout.addWidget(self.stopCollectButton)
+        fatherLayout.addWidget(self.clearDataButton)
+        fatherLayout.addWidget(self.saveDataButton)

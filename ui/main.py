@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-import database, convert
+import database, serialPort
 
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
@@ -18,15 +18,13 @@ class MainWindow(QMainWindow, QWidget):
         self.showLabel()
         self.showButton()
         self.showImage()
-        self.setupPort()
-        self.addLayout()
+        self.serialPortObject = serialPort.SerialPortClass()
+        self.setupLayout()
         self.connectSignalSlot()
 
     #连接信号与槽
     def connectSignalSlot(self):
-        self.startCollectButton.clicked[bool].connect(self.startCollect)
         self.showDatabaseButton.clicked.connect(self.showDatabase)
-        self.portTestButton.clicked.connect(self.testPort)
 
     #显示数据库
     def showDatabase(self,pressed):
@@ -35,80 +33,10 @@ class MainWindow(QMainWindow, QWidget):
         form.setWindowIcon(QIcon("../icons/foot32.png"))
         form.show()
 
-    #初始化串口
-    def setupPort(self):
-        self.portStatus = False # 端口正在被使用标志
-        self.serial = serial.Serial()# 初始化serial类
-
-        # 串口号选择
-        self.portLabel = QLabel("串口选择",self)
-        self.portBox = QComboBox(self)
-        for i in range(8):
-            self.portBox.addItem("COM" + str(i))
-
-        # 波特率选择
-        self.baudRateLabel = QLabel("波特率选择", self)
-        self.baudRateBox = QComboBox(self)
-        self.baudRateBox.addItem("9600")
-        self.baudRateBox.addItem("115200")
-
-        # 测试串口按钮
-        self.portTestButton= QPushButton("测试串口",self)
-        self.portTestButton.setCheckable(True)
-
     #显示按钮
     def showButton(self):
         self.showDatabaseButton = QPushButton("数据库", self) # 数据库按钮在这里
         self.showDatabaseButton.setCheckable(True)
-
-        self.startCollectButton = QPushButton("开始采集", self)
-        self.startCollectButton.setCheckable(True)
-        self.stopCollectButton = QPushButton("停止采集", self)
-        self.stopCollectButton.setCheckable(True)
-        self.clearDataButton = QPushButton("清除", self)
-        self.clearDataButton.setCheckable(True)
-        self.saveDataButton = QPushButton("保存", self)
-        self.saveDataButton.setCheckable(True)
-
-    #测试串口是否打开
-    def testPort(self):
-        self.portTestButton.setChecked(False)
-        portName = self.portBox.currentText()  # str  "COM8"
-        bandRate = int(self.baudRateBox.currentText())  # int    9600
-        try:
-            self.serial = serial.Serial(portName)  # 设置串口号
-            self.serial.baudrate = bandRate  # 设置波特率
-            self.serial.close()
-            QMessageBox.warning(None, '端口', "端口可用", QMessageBox.Ok)
-        except:
-            QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
-
-    #开始采集
-    def startCollect(self, pressed):
-        if pressed and self.portStatus == False:
-            self.startCollectButton.setChecked(False)
-            self.startCollectButton.setEnabled(False)# 禁用一下
-            portName = self.portBox.currentText()  # str  "COM8"
-            bandRate = int(self.baudRateBox.currentText())  # int    9600
-
-            try:#打开串口
-                self.serial = serial.Serial(portName)  # 设置串口号
-                self.serial.baudrate = bandRate  # 设置波特率
-            except:
-                QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
-
-            self.portStatus = True
-            self.saveData()
-        else:
-            pass
-
-    # 保存脚印
-    def saveData(self):
-        convert.saveImgFromSerial(self.serial)
-        QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
-        self.serial.close() # 最后,关掉
-        self.portStatus = False
-        self.startCollectButton.setEnabled(True)
 
     # 标签
     def showLabel(self):
@@ -124,7 +52,7 @@ class MainWindow(QMainWindow, QWidget):
         self.selectPoiseBox.addItem("右脚")
 
     #布局
-    def addLayout(self):
+    def setupLayout(self):
         leftSideLayout = QVBoxLayout()
         leftSideLayout.addStretch(0)
 
@@ -134,16 +62,7 @@ class MainWindow(QMainWindow, QWidget):
         leftSideLayout.addWidget(self.selectPoiseLabel)
         leftSideLayout.addWidget(self.selectPoiseBox)
 
-        leftSideLayout.addWidget(self.portLabel)
-        leftSideLayout.addWidget(self.portBox)
-        leftSideLayout.addWidget(self.baudRateLabel)
-        leftSideLayout.addWidget(self.baudRateBox)
-        leftSideLayout.addWidget(self.portTestButton)
-
-        leftSideLayout.addWidget(self.startCollectButton)
-        leftSideLayout.addWidget(self.stopCollectButton)
-        leftSideLayout.addWidget(self.clearDataButton)
-        leftSideLayout.addWidget(self.saveDataButton)
+        self.serialPortObject.setupLayout(leftSideLayout)
 
         mainLayout = QHBoxLayout()
         mainLayout.addStretch(1)
@@ -170,7 +89,7 @@ class MainWindow(QMainWindow, QWidget):
         # self.footImageLabel.setScaledContents(True)
         # self.setCentralWidget(self.footImageLabel)
         self.footImage = QImage()
-        if self.footImage.load("../footPrints/timg.png"):
+        if self.footImage.load("../footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
             # self.resize(self.footImage.width(),self.footImage.height())
 

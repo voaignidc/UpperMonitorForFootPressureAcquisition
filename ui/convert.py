@@ -36,6 +36,42 @@ def voltageToGray(voltage):
 def voltageToBGR(voltage):
     return(grayToBGR(voltageToGray(voltage)))
 
+# 从串口读取数据,返回图像的np.array
+def saveArrayFromSerial(serial):
+    bgrPix = np.zeros((44, 32, 3), np.uint8)  # 44行32列，3通道
+    # 等待接受到开头
+    while True:
+        text = serial.readline().decode("utf-8")
+        print(text)
+        try:
+            index = int(text.split(' ')[0])
+        except:
+            print('split err')
+        if index == 0:
+            break
+
+    # 保存第一个
+    voltage = float(text.split(' ')[1].split('\n')[0])
+    bgrPix[0, 0, :] = voltageToBGR(voltage)
+
+    # 继续接受
+    while True:
+        text = serial.readline().decode("utf-8")
+        print(text)
+        index = int(text.split(' ')[0])
+        voltage = float(text.split(' ')[1].split('\n')[0])
+        bgrPix[int(index / 32), int(index % 32), :] = voltageToBGR(voltage)
+        if index == 1407:
+            break
+
+    return bgrPix
+
+# np.array转图像并保存
+def saveImgFromArray(array):
+    imgSmall = Image.fromarray(bgrPix)
+    imgBig = imgSmall.resize((320, 440))
+    imgBig.save('../footPrints/temp.png')
+
 # 从串口读取数据,保存成png
 def saveImgFromSerial(serial):
     bgrPix = np.zeros((44,32,3), np.uint8)# 44行32列，3通道
