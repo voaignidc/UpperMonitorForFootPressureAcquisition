@@ -5,6 +5,7 @@ import serial
 from PyQt5.QtWidgets import *
 
 import convert
+
 class SerialPortClass(QWidget):
     def __init__(self):
         super().__init__()
@@ -44,14 +45,8 @@ class SerialPortClass(QWidget):
 
         self.startCollectButton = QPushButton("开始采集", self)
         self.startCollectButton.setCheckable(True)
-        self.stopCollectButton = QPushButton("停止采集", self)
-        self.stopCollectButton.setCheckable(True)
-        self.clearDataButton = QPushButton("清除", self)
-        self.clearDataButton.setCheckable(True)
-        self.saveDataButton = QPushButton("保存", self)
-        self.saveDataButton.setCheckable(True)
 
-    #测试串口是否打开
+    # 测试串口是否打开
     def testPort(self):
         self.portTestButton.setChecked(False)
         portName = self.portBox.currentText()  # str  "COM8"
@@ -64,7 +59,7 @@ class SerialPortClass(QWidget):
         except:
             QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
 
-    #开始采集
+    # 开始采集
     def startCollect(self, pressed):
         if pressed and self.portStatus == False:
             self.startCollectButton.setChecked(False)
@@ -91,14 +86,11 @@ class SerialPortClass(QWidget):
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
 
+    # 布局
     def setupLayout(self, fatherLayout):
         fatherLayout.addWidget(self.portLabel)
         fatherLayout.addWidget(self.portBox)
         fatherLayout.addWidget(self.baudRateLabel)
         fatherLayout.addWidget(self.baudRateBox)
         fatherLayout.addWidget(self.portTestButton)
-
         fatherLayout.addWidget(self.startCollectButton)
-        fatherLayout.addWidget(self.stopCollectButton)
-        fatherLayout.addWidget(self.clearDataButton)
-        fatherLayout.addWidget(self.saveDataButton)
