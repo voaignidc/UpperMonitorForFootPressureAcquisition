@@ -5,6 +5,8 @@ from PIL import Image, ImageDraw
 import numpy as np
 # 图像是 44行 32列
 # 转成 440行 320列
+
+# 0-255 转 (0-255, 0-255, 0-255)
 def grayToBGR(gray):
     if gray >= 0 and gray <= 85:
         B = int(255 / 85 * gray)
@@ -26,15 +28,18 @@ def grayToBGR(gray):
         R = int(-510 + 510 / 170 * gray)
     return (B, G, R)
 
+# 0-3.3 转 0-255
 def voltageToGray(voltage):
     return voltage*255/3.3
 
+# 电压转彩色
 def voltageToBGR(voltage):
     return(grayToBGR(voltageToGray(voltage)))
 
-def saveImg(serial):
-    bgrPix = np.zeros((44,32,3), np.uint8)#44行32列，3通道
-    #等待接受到开头
+# 从串口读取数据,保存成png
+def saveImgFromSerial(serial):
+    bgrPix = np.zeros((44,32,3), np.uint8)# 44行32列，3通道
+    # 等待接受到开头
     while True:
         text=serial.readline().decode("utf-8")
         print(text)
@@ -45,12 +50,11 @@ def saveImg(serial):
         if index == 0:
             break
 
-    # # 保存第一个
-
+    # 保存第一个
     voltage = float(text.split(' ')[1].split('\n')[0])
     bgrPix[0,0,:] = voltageToBGR(voltage)
 
-    # # 继续接受
+    # 继续接受
     while True:
         text=serial.readline().decode("utf-8")
         print(text)
@@ -64,11 +68,11 @@ def saveImg(serial):
     imgBig = imgSmall.resize((320, 440))
     imgBig.save('../footPrints/temp.png')
 
-'''测试用'''
-if __name__ == '__main__':
-    bgrPix = np.zeros((44,32,3), np.uint8)#44行32列，3通道
+# 从txt读数据,保存成png,测试用
+def saveImgFromTxt():
+    bgrPix = np.zeros((44,32,3), np.uint8)# 44行32列，3通道
     with open('./temp.txt','r') as f:
-        #等待接受到开头
+        # 等待接受到开头
         while True:
             text=f.readline()
             print(text)

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import sys, serial, time
+import sys, serial
 
 import sqlite3
 from PyQt5.QtWidgets import *
@@ -28,6 +28,7 @@ class MainWindow(QMainWindow, QWidget):
         self.showDatabaseButton.clicked.connect(self.showDatabase)
         self.portTestButton.clicked.connect(self.testPort)
 
+    #显示数据库
     def showDatabase(self,pressed):
         self.showDatabaseButton.setChecked(False)
         form = database.DataBaseDlg()
@@ -37,12 +38,12 @@ class MainWindow(QMainWindow, QWidget):
     #初始化串口
     def setupPort(self):
         self.portStatus = False # 端口正在被使用标志
-        self.serial = serial.Serial()#初始化serial类
+        self.serial = serial.Serial()# 初始化serial类
 
         # 串口号选择
         self.portLabel = QLabel("串口选择",self)
         self.portBox = QComboBox(self)
-        for i in range(8)[::-1]:
+        for i in range(8):
             self.portBox.addItem("COM" + str(i))
 
         # 波特率选择
@@ -55,6 +56,7 @@ class MainWindow(QMainWindow, QWidget):
         self.portTestButton= QPushButton("测试串口",self)
         self.portTestButton.setCheckable(True)
 
+    #显示按钮
     def showButton(self):
         self.showDatabaseButton = QPushButton("数据库", self) # 数据库按钮在这里
         self.showDatabaseButton.setCheckable(True)
@@ -68,6 +70,7 @@ class MainWindow(QMainWindow, QWidget):
         self.saveDataButton = QPushButton("保存", self)
         self.saveDataButton.setCheckable(True)
 
+    #测试串口是否打开
     def testPort(self):
         self.portTestButton.setChecked(False)
         portName = self.portBox.currentText()  # str  "COM8"
@@ -99,14 +102,15 @@ class MainWindow(QMainWindow, QWidget):
         else:
             pass
 
-    #保存脚印
+    # 保存脚印
     def saveData(self):
-        convert.saveImg(self.serial)
+        convert.saveImgFromSerial(self.serial)
         QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
         self.serial.close() # 最后,关掉
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
 
+    # 标签
     def showLabel(self):
         self.selectUserLabel = QLabel("选择用户",self)
         self.selectUserBox = QComboBox(self)
@@ -151,7 +155,8 @@ class MainWindow(QMainWindow, QWidget):
         widget.setLayout(mainLayout)
 
         self.setCentralWidget(widget)
-    #显示足底图
+
+    #显示两个图
     def showImage(self):
         #左侧的刻度图
         self.scaleImageLabel = QLabel(self)
@@ -159,6 +164,7 @@ class MainWindow(QMainWindow, QWidget):
         if self.scaleImage.load("../icons/arr.png"):
             self.scaleImageLabel.setPixmap(QPixmap.fromImage(self.scaleImage))
 
+        #足底压力图
         self.footImageLabel = QLabel(self)
         # self.footImageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         # self.footImageLabel.setScaledContents(True)
