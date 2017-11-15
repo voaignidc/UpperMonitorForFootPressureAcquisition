@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
-import database
+import database, convert
 
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
@@ -26,6 +26,7 @@ class MainWindow(QMainWindow, QWidget):
     def connectSignalSlot(self):
         self.startCollectButton.clicked[bool].connect(self.startCollect)
         self.showDatabaseButton.clicked.connect(self.showDatabase)
+        self.portTestButton.clicked.connect(self.testPort)
 
     def showDatabase(self,pressed):
         self.showDatabaseButton.setChecked(False)
@@ -35,8 +36,8 @@ class MainWindow(QMainWindow, QWidget):
 
     #初始化串口
     def setupPort(self):
-        self.portStatus = False#端口使能标志
-        self._serial = serial.Serial()#初始化serial类
+        self.portStatus = False # 端口正在被使用标志
+        self.serial = serial.Serial()#初始化serial类
 
         # 串口号选择
         self.portLabel = QLabel("串口选择",self)
@@ -47,8 +48,8 @@ class MainWindow(QMainWindow, QWidget):
         # 波特率选择
         self.baudRateLabel = QLabel("波特率选择", self)
         self.baudRateBox = QComboBox(self)
-        self.baudRateBox.addItem("115200")
         self.baudRateBox.addItem("9600")
+        self.baudRateBox.addItem("115200")
 
         # 测试串口按钮
         self.portTestButton= QPushButton("测试串口",self)
@@ -67,22 +68,44 @@ class MainWindow(QMainWindow, QWidget):
         self.saveDataButton = QPushButton("保存", self)
         self.saveDataButton.setCheckable(True)
 
+    def testPort(self):
+        self.portTestButton.setChecked(False)
+        portName = self.portBox.currentText()  # str  "COM8"
+        bandRate = int(self.baudRateBox.currentText())  # int    9600
+        try:
+            self.serial = serial.Serial(portName)  # 设置串口号
+            self.serial.baudrate = bandRate  # 设置波特率
+            self.serial.close()
+            QMessageBox.warning(None, '端口', "端口可用", QMessageBox.Ok)
+        except:
+            QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
+
+    #开始采集
     def startCollect(self, pressed):
-        if pressed:
-            self.startCollectButton.setEnabled(False)
-            self.sendStartFlag()
-            self.readData()
+        if pressed and self.portStatus == False:
+            self.startCollectButton.setChecked(False)
+            self.startCollectButton.setEnabled(False)# 禁用一下
+            portName = self.portBox.currentText()  # str  "COM8"
+            bandRate = int(self.baudRateBox.currentText())  # int    9600
+
+            try:#打开串口
+                self.serial = serial.Serial(portName)  # 设置串口号
+                self.serial.baudrate = bandRate  # 设置波特率
+            except:
+                QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
+
+            self.portStatus = True
+            self.saveData()
         else:
             pass
 
-    def sendStartFlag(self):
-        pass
-
-    def readData(self):
-        pass
-
-    def sendStopFlag(self):
-        pass
+    #保存脚印
+    def saveData(self):
+        convert.saveImg(self.serial)
+        QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
+        self.serial.close() # 最后,关掉
+        self.portStatus = False
+        self.startCollectButton.setEnabled(True)
 
     def showLabel(self):
         self.selectUserLabel = QLabel("选择用户",self)
@@ -121,7 +144,8 @@ class MainWindow(QMainWindow, QWidget):
         mainLayout = QHBoxLayout()
         mainLayout.addStretch(1)
         mainLayout.addLayout(leftSideLayout)
-        mainLayout.addWidget(self.imageLabel)
+        mainLayout.addWidget(self.scaleImageLabel)
+        mainLayout.addWidget(self.footImageLabel)
 
         widget = QWidget()
         widget.setLayout(mainLayout)
@@ -129,15 +153,20 @@ class MainWindow(QMainWindow, QWidget):
         self.setCentralWidget(widget)
     #显示足底图
     def showImage(self):
-        self.imageLabel = QLabel(self)
-        # self.imageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        # self.imageLabel.setScaledContents(True)
-        self.setCentralWidget(self.imageLabel)
+        #左侧的刻度图
+        self.scaleImageLabel = QLabel(self)
+        self.scaleImage = QImage()
+        if self.scaleImage.load("../icons/arr.png"):
+            self.scaleImageLabel.setPixmap(QPixmap.fromImage(self.scaleImage))
 
+        self.footImageLabel = QLabel(self)
+        # self.footImageLabel.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        # self.footImageLabel.setScaledContents(True)
+        # self.setCentralWidget(self.footImageLabel)
         self.footImage = QImage()
         if self.footImage.load("../footPrints/timg.png"):
-                self.imageLabel.setPixmap(QPixmap.fromImage(self.footImage))
-                # self.resize(self.footImage.width(),self.footImage.height())
+            self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
+            # self.resize(self.footImage.width(),self.footImage.height())
 
 '''以下主函数'''
 app = QApplication(sys.argv)

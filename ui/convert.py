@@ -1,6 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-def grayToRGB(gray):
+import  serial
+from PIL import Image, ImageDraw
+import numpy as np
+# 图像是 44行 32列
+# 转成 440行 320列
+def grayToBGR(gray):
     if gray >= 0 and gray <= 85:
         B = int(255 / 85 * gray)
     elif gray >= 85 and gray <= 170:
@@ -21,22 +26,73 @@ def grayToRGB(gray):
         R = int(-510 + 510 / 170 * gray)
     return (B, G, R)
 
+def voltageToGray(voltage):
+    return voltage*255/3.3
 
-with open('./temp.txt','r') as f:
+def voltageToBGR(voltage):
+    return(grayToBGR(voltageToGray(voltage)))
+
+def saveImg(serial):
+    bgrPix = np.zeros((44,32,3), np.uint8)#44行32列，3通道
     #等待接受到开头
     while True:
-        text=f.readline()
+        text=serial.readline().decode("utf-8")
         print(text)
-        if text[0]=='0':
+        try:
+            index = int(text.split(' ')[0])
+        except:
+            print('split err')
+        if index == 0:
             break
-    #继续接受
-    voltage=float(text.split(' ')[1])
-    #
-    # while True:
-    #     text=f.readline()
-    #     print(text)
-    #     if text[0]=='0':
-    #         break
+
+    # # 保存第一个
+
+    voltage = float(text.split(' ')[1].split('\n')[0])
+    bgrPix[0,0,:] = voltageToBGR(voltage)
+
+    # # 继续接受
+    while True:
+        text=serial.readline().decode("utf-8")
+        print(text)
+        index = int(text.split(' ')[0])
+        voltage = float(text.split(' ')[1].split('\n')[0])
+        bgrPix[int(index/32),int(index%32),:] = voltageToBGR(voltage)
+        if index == 1407:
+            break
+
+    imgSmall = Image.fromarray(bgrPix)
+    imgBig = imgSmall.resize((320, 440))
+    imgBig.save('../footPrints/temp.png')
+
+'''测试用'''
+if __name__ == '__main__':
+    bgrPix = np.zeros((44,32,3), np.uint8)#44行32列，3通道
+    with open('./temp.txt','r') as f:
+        #等待接受到开头
+        while True:
+            text=f.readline()
+            print(text)
+            index = int(text.split(' ')[0])
+            if index == 0:
+                break
+
+        # 保存第一个
+        voltage = float(text.split(' ')[1].split('\n')[0])
+        bgrPix[0,0,:] = voltageToBGR(voltage)
+
+        # 继续接受
+        while True:
+            text=f.readline()
+            print(text)
+            index = int(text.split(' ')[0])
+            voltage = float(text.split(' ')[1].split('\n')[0])
+            bgrPix[int(index/32),int(index%32),:] = voltageToBGR(voltage)
+            if index == 1407:
+                break
+
+        imgSmall = Image.fromarray(bgrPix)
+        imgBig = imgSmall.resize((320, 440))
+        imgBig.save('../footPrints/temp.png')
+        imgBig.show()
 
 
-        
