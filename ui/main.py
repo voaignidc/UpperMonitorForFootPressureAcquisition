@@ -8,6 +8,7 @@ from PyQt5.QtGui import *
 
 import database, serialPort
 
+# 主窗口
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
         super().__init__()
@@ -24,6 +25,7 @@ class MainWindow(QMainWindow, QWidget):
     #连接信号与槽
     def connectSignalSlot(self):
         self.showDatabaseButton.clicked.connect(self.showDatabase)
+        self.serialPortObject.finishSavingSingal.connect(self.refreshFootImage) # '保存完毕'信号 连 刷新图像
         self.refreshFootImageButton.clicked.connect(self.refreshFootImage)
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
 

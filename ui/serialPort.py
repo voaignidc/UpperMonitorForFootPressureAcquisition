@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import serial
-
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 import convert
 
+# 串口类
 class SerialPortClass(QWidget):
+    finishSavingSingal = pyqtSignal()  # 结束信号
     def __init__(self):
         super().__init__()
         self.setupUi()
@@ -75,27 +76,26 @@ class SerialPortClass(QWidget):
                 QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
 
             self.portStatus = True
-            self.saveData()
+            self.savingData()
         else:
             pass
 
     # 保存脚印
-    def saveData(self):
-        # 以下必须加self,为什么?
-        self.convertProcessDlg = convert.ConvertProcessDlg()
-        self.convertProcessDlg.show()
-        # 开一个新线程来读数据
-        self.convertProcessThread = convert.ConvertProcessThread(self.serial)
-        self.convertProcessThread.finishConvertSingal.connect(self.finishSavingData) # 结束信号connect
-        self.convertProcessThread.start()
+    def savingData(self):
+        # 以下必须加self,不然会卡死,为什么?
+        self.convertProcessDlg = convert.ConvertProcessDlg(self.serial)
+        # '转换结束'信号连接到 finishSavingData
+        self.convertProcessDlg.convertProcessThread.finishConvertSingal.connect(self.finishSavingData)
+        self.convertProcessDlg.convertProcessThread.start()
 
     # 结束保存脚印数据
     def finishSavingData(self):
         self.serial.close()  # 最后,关掉串口
         QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
-        self.convertProcessDlg.close()
+        self.convertProcessDlg.close() # 关闭这个对话框
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
+        self.finishSavingSingal.emit() # 发射'保存完毕'信号
 
     # 布局
     def setupLayout(self, fatherLayout):
