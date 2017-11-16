@@ -10,6 +10,7 @@ MAC = False
 ID, USERNAME, SEX, AGE = range(4)
 
 class DataBaseDlg(QDialog):
+    addRecordSignal = pyqtSignal() # 向数据库里添加了人物的信号
     def __init__(self, parent=None):
         super(DataBaseDlg, self).__init__(parent)
 
@@ -72,6 +73,10 @@ class DataBaseDlg(QDialog):
         index = self.model.index(row, USERNAME)
         self.view.setCurrentIndex(index)
         self.view.edit(index)
+        r = self.view.currentIndex().row()# 行
+        if r == -1: # 如果输入全部数据后再按,那么r==-1
+            QMessageBox.information(self,"成功","录入成功", QMessageBox.Ok)
+            self.addRecordSignal.emit()
 
     #删除数据
     def deleteRecord(self):

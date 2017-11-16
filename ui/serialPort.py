@@ -57,7 +57,7 @@ class SerialPortClass(QWidget):
             self.serial = serial.Serial(portName)  # 设置串口号
             self.serial.baudrate = bandRate  # 设置波特率
             self.serial.close()
-            QMessageBox.warning(None, '端口', "端口可用", QMessageBox.Ok)
+            QMessageBox.information(None, '端口', "端口可用", QMessageBox.Ok)
         except:
             QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
 
@@ -91,7 +91,7 @@ class SerialPortClass(QWidget):
     # 结束保存脚印数据
     def finishSavingData(self):
         self.serial.close()  # 最后,关掉串口
-        QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
+        QMessageBox.information(None, '成功', "脚印采集成功", QMessageBox.Ok)
         self.convertProcessDlg.close() # 关闭这个对话框
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
