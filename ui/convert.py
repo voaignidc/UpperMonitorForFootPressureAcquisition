@@ -3,7 +3,7 @@
 from PIL import Image
 import numpy as np
 from PyQt5.QtWidgets import *
-
+from PyQt5.QtCore import *
 # 图像是 44行 32列
 # 转成 440行 320列
 
@@ -29,8 +29,19 @@ class ConvertProcessDlg(QDialog):
         mainLayout.addWidget(self.readUsefulDataBar)
         self.setLayout(mainLayout)
 
-    def run(self, ser):
-        self.saveImgFromSerial(ser)
+
+
+class ConvertProcessThread(QThread):
+    # finishConvertSingal =  pyqtSignal()
+    def __init__(self, serial):
+        super().__init__()
+        self.serial = serial
+
+
+    def run(self):
+        self.saveImgFromSerial()
+        # finishConvertSingal.emit()
+
     # 0-255 转 (0-255, 0-255, 0-255)
     def grayToBGR(self, gray):
         if gray >= 0 and gray <= 85:
@@ -60,11 +71,11 @@ class ConvertProcessDlg(QDialog):
         return(self.grayToBGR(self.voltageToGray(voltage)))
 
     # 从串口读取数据,返回图像的np.array
-    def saveArrayFromSerial(self, serial):
+    def saveArrayFromSerial(self):
         bgrPix = np.zeros((44, 32, 3), np.uint8)  # 44行32列，3通道
         # 等待接受到开头
         while True:
-            text = serial.readline().decode("utf-8")
+            text = self.serial.readline().decode("utf-8")
             print(text)
             try:
                 index = int(text.split(' ')[0])
@@ -79,7 +90,7 @@ class ConvertProcessDlg(QDialog):
 
         # 继续接受
         while True:
-            text = serial.readline().decode("utf-8")
+            text = self.serial.readline().decode("utf-8")
             print(text)
             index = int(text.split(' ')[0])
             voltage = float(text.split(' ')[1].split('\n')[0])
@@ -96,11 +107,11 @@ class ConvertProcessDlg(QDialog):
         imgBig.save('../footPrints/temp.png')
 
     # 从串口读取数据,保存成png
-    def saveImgFromSerial(self,serial):
+    def saveImgFromSerial(self):
         bgrPix = np.zeros((44,32,3), np.uint8)# 44行32列，3通道
         # 等待接受到开头
         while True:
-            text=serial.readline().decode("utf-8")
+            text=self.serial.readline().decode("utf-8")
             print(text)
             try:
                 index = int(text.split(' ')[0])
@@ -115,7 +126,7 @@ class ConvertProcessDlg(QDialog):
 
         # 继续接受
         while True:
-            text=serial.readline().decode("utf-8")
+            text=self.serial.readline().decode("utf-8")
             print(text)
             index = int(text.split(' ')[0])
             voltage = float(text.split(' ')[1].split('\n')[0])

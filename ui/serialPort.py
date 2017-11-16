@@ -4,6 +4,7 @@ import serial
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 import convert
 
@@ -65,7 +66,7 @@ class SerialPortClass(QWidget):
     def startCollect(self, pressed):
         if pressed and self.portStatus == False:
             self.startCollectButton.setChecked(False)
-            self.startCollectButton.setEnabled(False)# 禁用一下
+            # self.startCollectButton.setEnabled(False)# 禁用一下
             portName = self.portBox.currentText()  # str  "COM8"
             bandRate = int(self.baudRateBox.currentText())  # int    9600
 
@@ -82,13 +83,20 @@ class SerialPortClass(QWidget):
 
     # 保存脚印
     def saveData(self):
-        convertProcessObject = convert.ConvertProcessDlg()
-        convertProcessObject.setWindowIcon(QIcon("../icons/foot32.png"))
-        convertProcessObject.resize(400, 150)
-        convertProcessObject.show()
-        convertProcessObject.saveImgFromSerial(self.serial)
-        QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
-        self.serial.close() # 最后,关掉
+        # 以下必须加self,为什么?
+        self.convertProcessDlg = convert.ConvertProcessDlg()
+        self.convertProcessDlg.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.convertProcessDlg.resize(400, 150)
+        self.convertProcessDlg.show()
+
+        self.convertProcessThread = convert.ConvertProcessThread(self.serial)
+        self.convertProcessThread.start()
+        self.finishSavingData()
+
+    def finishSavingData(self):
+        # self.serial.close()  # 最后,关掉
+        # QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
+
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
 
