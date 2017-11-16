@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 import sys, serial
 
-import sqlite3
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtSql import *
 
 import database, serialPort
 
@@ -15,6 +15,7 @@ class MainWindow(QMainWindow, QWidget):
         self.setupUi()
 
     def setupUi(self):
+        self.setupDataBase()
         self.showLabel()
         self.showButton()
         self.showImage()
@@ -24,23 +25,32 @@ class MainWindow(QMainWindow, QWidget):
 
     #连接信号与槽
     def connectSignalSlot(self):
-        self.showDatabaseButton.clicked.connect(self.showDatabase)
+        self.showDataBaseButton.clicked.connect(self.showDataBase)
         self.serialPortObject.finishSavingSingal.connect(self.refreshFootImage) # '保存完毕'信号 连 刷新图像
         self.refreshFootImageButton.clicked.connect(self.refreshFootImage)
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
 
-    #显示数据库
-    def showDatabase(self,pressed):
-        self.showDatabaseButton.setChecked(False)
-        form = database.DataBaseDlg()
-        form.setWindowIcon(QIcon("../icons/foot32.png"))
-        form.show()
+    # 初始化数据库
+    def setupDataBase(self):
+        self.dataBaseDlg = database.DataBaseDlg()
+        self.selectUserLabel = QLabel("选择用户",self)
+        self.selectUserBox = QComboBox(self)
+
+        self.query = QSqlQuery()
+        self.query.exec_("""select userName from footdata""")
+        while self.query.next():
+            name = self.query.value(0)
+            self.selectUserBox.addItem(name)
+
+    # 显示数据库
+    def showDataBase(self,pressed):
+        self.showDataBaseButton.setChecked(False)
+        self.dataBaseDlg.show()
 
     #显示按钮
     def showButton(self):
-        self.showDatabaseButton = QPushButton("数据库", self) # 数据库按钮在这里
-        self.showDatabaseButton.setCheckable(True)
-
+        self.showDataBaseButton = QPushButton("数据库", self) # 数据库按钮在这里
+        self.showDataBaseButton.setCheckable(True)
         self.refreshFootImageButton = QPushButton("刷新云图", self)
         self.refreshFootImageButton.setCheckable(True)
         self.clearFootImageButton = QPushButton("清除", self)
@@ -50,16 +60,12 @@ class MainWindow(QMainWindow, QWidget):
 
     # 标签
     def showLabel(self):
-        self.selectUserLabel = QLabel("选择用户",self)
-        self.selectUserBox = QComboBox(self)
-        for i in range(8):
-            self.selectUserBox.addItem("用户"+str(i))
-
-        self.selectPoiseLabel = QLabel("选择站姿", self)
-        self.selectPoiseBox = QComboBox(self)
-        self.selectPoiseBox.addItem("双脚")
-        self.selectPoiseBox.addItem("左脚")
-        self.selectPoiseBox.addItem("右脚")
+        pass
+        # self.selectPoiseLabel = QLabel("选择站姿", self)
+        # self.selectPoiseBox = QComboBox(self)
+        # self.selectPoiseBox.addItem("双脚")
+        # self.selectPoiseBox.addItem("左脚")
+        # self.selectPoiseBox.addItem("右脚")
 
     #显示两个图
     def showImage(self):
@@ -96,11 +102,11 @@ class MainWindow(QMainWindow, QWidget):
         leftSideLayout = QVBoxLayout()
         leftSideLayout.addStretch(0)
 
-        leftSideLayout.addWidget(self.showDatabaseButton)
+        leftSideLayout.addWidget(self.showDataBaseButton)
         leftSideLayout.addWidget(self.selectUserLabel)
         leftSideLayout.addWidget(self.selectUserBox)
-        leftSideLayout.addWidget(self.selectPoiseLabel)
-        leftSideLayout.addWidget(self.selectPoiseBox)
+        # leftSideLayout.addWidget(self.selectPoiseLabel)
+        # leftSideLayout.addWidget(self.selectPoiseBox)
 
         self.serialPortObject.setupLayout(leftSideLayout)
 

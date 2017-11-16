@@ -74,7 +74,7 @@ class ConvertProcessThread(QThread):
         while True:
             text=self.serial.readline().decode("utf-8")
             print(text)
-            if len(text) >= 4:
+            if len(text) >= 6:
                 try:
                     index = int(text.split(' ')[0])
                     self.uselessDataIndexSingal[int].emit(index//14.1)

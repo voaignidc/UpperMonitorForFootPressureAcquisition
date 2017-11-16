@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os, sys
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
@@ -9,7 +10,6 @@ MAC = False
 ID, USERNAME, SEX, AGE = range(4)
 
 class DataBaseDlg(QDialog):
-
     def __init__(self, parent=None):
         super(DataBaseDlg, self).__init__(parent)
 
@@ -62,7 +62,7 @@ class DataBaseDlg(QDialog):
         sortByAgeAction.triggered.connect(lambda:self.sort(AGE))
         
         closeButton.clicked.connect(self.accept)
-
+        self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("数据库")
 
     #向数据库添加数据
@@ -101,6 +101,7 @@ def setupDatabase():
     filename = os.path.join(os.path.dirname(__file__), "footdata.db")
     create = not QFile.exists(filename)
 
+    # 连接数据库
     db = QSqlDatabase.addDatabase("QSQLITE")
     db.setDatabaseName(filename)
     if not db.open():

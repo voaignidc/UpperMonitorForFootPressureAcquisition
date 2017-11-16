@@ -1,3 +1,5 @@
 *.py[cod]
 .idea/
 *.txt
+db2.py
+db3.py
