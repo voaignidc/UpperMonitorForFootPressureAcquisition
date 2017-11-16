@@ -4,7 +4,6 @@ import serial
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 
 import convert
 
@@ -22,6 +21,13 @@ class SerialPortClass(QWidget):
     def connectSignalSlot(self):
         self.startCollectButton.clicked[bool].connect(self.startCollect)
         self.portTestButton.clicked.connect(self.testPort)
+
+    #按钮
+    def showButton(self):
+        self.portTestButton= QPushButton("测试串口",self)
+        self.portTestButton.setCheckable(True)
+        self.startCollectButton = QPushButton("开始采集", self)
+        self.startCollectButton.setCheckable(True)
 
     #初始化串口
     def setupPort(self):
@@ -41,14 +47,6 @@ class SerialPortClass(QWidget):
         self.baudRateBox.addItem("9600")
         self.baudRateBox.addItem("115200")
 
-    def showButton(self):
-        # 测试串口按钮
-        self.portTestButton= QPushButton("测试串口",self)
-        self.portTestButton.setCheckable(True)
-
-        self.startCollectButton = QPushButton("开始采集", self)
-        self.startCollectButton.setCheckable(True)
-
     # 测试串口是否打开
     def testPort(self):
         self.portTestButton.setChecked(False)
@@ -66,11 +64,11 @@ class SerialPortClass(QWidget):
     def startCollect(self, pressed):
         if pressed and self.portStatus == False:
             self.startCollectButton.setChecked(False)
-            # self.startCollectButton.setEnabled(False)# 禁用一下
+            self.startCollectButton.setEnabled(False) # 禁用一下
             portName = self.portBox.currentText()  # str  "COM8"
             bandRate = int(self.baudRateBox.currentText())  # int    9600
 
-            try:#打开串口
+            try: # 打开串口
                 self.serial = serial.Serial(portName)  # 设置串口号
                 self.serial.baudrate = bandRate  # 设置波特率
             except:
@@ -85,18 +83,17 @@ class SerialPortClass(QWidget):
     def saveData(self):
         # 以下必须加self,为什么?
         self.convertProcessDlg = convert.ConvertProcessDlg()
-        self.convertProcessDlg.setWindowIcon(QIcon("../icons/foot32.png"))
-        self.convertProcessDlg.resize(400, 150)
         self.convertProcessDlg.show()
-
+        # 开一个新线程来读数据
         self.convertProcessThread = convert.ConvertProcessThread(self.serial)
+        self.convertProcessThread.finishConvertSingal.connect(self.finishSavingData) # 结束信号connect
         self.convertProcessThread.start()
-        self.finishSavingData()
 
+    # 结束保存脚印数据
     def finishSavingData(self):
-        # self.serial.close()  # 最后,关掉
-        # QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
-
+        self.serial.close()  # 最后,关掉串口
+        QMessageBox.warning(None, '成功', "脚印采集成功", QMessageBox.Ok)
+        self.convertProcessDlg.close()
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
 

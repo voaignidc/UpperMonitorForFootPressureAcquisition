@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 from PIL import Image
 import numpy as np
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 # 图像是 44行 32列
 # 转成 440行 320列
 
+# 读取数据的对话框
 class ConvertProcessDlg(QDialog):
     def __init__(self):
         super().__init__()
@@ -20,6 +22,8 @@ class ConvertProcessDlg(QDialog):
         self.readUsefulDataBar.setValue(0)
         self.setupLayout()
         self.setWindowTitle("读取数据")
+        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.resize(400, 100)
 
     def setupLayout(self):
         mainLayout = QVBoxLayout()
@@ -30,17 +34,16 @@ class ConvertProcessDlg(QDialog):
         self.setLayout(mainLayout)
 
 
-
+# 读取数据的新线程
 class ConvertProcessThread(QThread):
-    # finishConvertSingal =  pyqtSignal()
+    finishConvertSingal =  pyqtSignal() # 结束信号
     def __init__(self, serial):
         super().__init__()
         self.serial = serial
 
-
     def run(self):
         self.saveImgFromSerial()
-        # finishConvertSingal.emit()
+        self.finishConvertSingal.emit()
 
     # 0-255 转 (0-255, 0-255, 0-255)
     def grayToBGR(self, gray):
@@ -168,12 +171,4 @@ class ConvertProcessThread(QThread):
             imgBig = imgSmall.resize((320, 440))
             imgBig.save('../footPrints/temp.png')
             imgBig.show()
-
-
-'''测试用'''
-# if __name__ == "__main__":
-#     serial = serial.Serial('COM3')  # 设置串口号
-#     serial.baudrate = '9600'  # 设置波特率
-#     conv = ConvertProcessClass(serial)
-#     conv.saveImgFromSerial()
 
