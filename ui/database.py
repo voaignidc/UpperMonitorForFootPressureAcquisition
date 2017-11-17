@@ -6,10 +6,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
-
-
 MAC = False
-ID, USERNAME, SEX, AGE = range(4)
+ID, USERNAME, SEX, AGE ,FOOTIMG= range(5)
 
 class DataBaseDlg(QDialog):
     changeRecordSignal = pyqtSignal() # 改变数据库行的信号
@@ -23,6 +21,7 @@ class DataBaseDlg(QDialog):
         self.model.setHeaderData(USERNAME, Qt.Horizontal,"用户名")
         self.model.setHeaderData(SEX, Qt.Horizontal,"性别")
         self.model.setHeaderData(AGE, Qt.Horizontal,"年龄")
+        self.model.setHeaderData(FOOTIMG, Qt.Horizontal,"足部压力数据")
         self.model.select()
 
         self.view = QTableView()
@@ -30,6 +29,7 @@ class DataBaseDlg(QDialog):
         self.view.setSelectionMode(QTableView.SingleSelection)
         self.view.setSelectionBehavior(QTableView.SelectRows)
         self.view.setColumnHidden(ID, True) # 隐藏ID
+        self.view.setColumnHidden(FOOTIMG, True) # 隐藏FOOTIMG
         self.view.resizeColumnsToContents()
 
         buttonBox = QDialogButtonBox()
@@ -146,7 +146,8 @@ def setupDatabase():
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 userName VARCHAR(255) NOT NULL,
                 sex VARCHAR(255) NOT NULL,
-                age VARCHAR(255))""")
+                age VARCHAR(255),
+                footImg BLOB)""")
     
 '''以下主函数'''
 setupDatabase()

@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import sys, serial
-
+import sys, os
+from PIL import Image
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSql import *
@@ -16,7 +17,7 @@ class MainWindow(QMainWindow, QWidget):
 
     def setupUi(self):
         self.setupDataBase()
-        self.showLabel()
+        # self.showLabel()
         self.showButton()
         self.showImage()
         self.serialPortObject = serialPort.SerialPortClass()
@@ -29,6 +30,7 @@ class MainWindow(QMainWindow, QWidget):
         self.serialPortObject.finishSavingSingal.connect(self.refreshFootImage) # '保存完毕'信号 连 刷新图像
         self.refreshFootImageButton.clicked.connect(self.refreshFootImage)
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
+        self.saveFootImageButton.clicked.connect(self.saveFootImage)
 
     # 初始化数据库
     def setupDataBase(self):
@@ -37,10 +39,11 @@ class MainWindow(QMainWindow, QWidget):
         self.selectUserBox = QComboBox(self)
 
         self.query = QSqlQuery()
-        self.query.exec_("""select userName from footdata""")
+        self.query.exec_("""select id,userName from footdata""")
         while self.query.next():
-            name = self.query.value(0)
-            self.selectUserBox.addItem(name)
+            id = self.query.value(0)
+            name = self.query.value(1)
+            self.selectUserBox.addItem(name+' id='+str(id))
         # 连接
         self.dataBaseDlg.changeRecordSignal.connect(self.refreshUserNameBox)
 
@@ -51,25 +54,34 @@ class MainWindow(QMainWindow, QWidget):
 
     # 刷新用户Box
     def refreshUserNameBox(self):
-        # print('refreshUserNameBox')
         self.selectUserBox.clear() # 清空这个QComboBox
-        # print('selectUserBox.clear')
-        self.query.exec_("""select userName from footdata""")
+        self.query.exec_("""select id,userName from footdata""")
         while self.query.next():
-            name = self.query.value(0)
-            self.selectUserBox.addItem(name)
-        # print('selectUserBox.addItem')
+            id = self.query.value(0)
+            name = self.query.value(1)
+            self.selectUserBox.addItem(name+' id='+str(id))
+
+    # 获得当前是哪个用户
+    def getCurrentUserName(self):
+        currentUserName = self.selectUserBox.currentText()
+        return currentUserName
+
+    # 获得当前是哪个ID
+    def getCurrentUserId(self):
+        currentUserName = self.selectUserBox.currentText()
+        currentUserId = currentUserName.split('=')[1]
+        return currentUserId
 
     #显示按钮
     def showButton(self):
         self.showDataBaseButton = QPushButton("数据库", self) # 数据库按钮在这里
         self.showDataBaseButton.setCheckable(True)
-        self.refreshFootImageButton = QPushButton("刷新云图", self)
+        self.refreshFootImageButton = QPushButton("刷新压力云图", self)
         self.refreshFootImageButton.setCheckable(True)
-        self.clearFootImageButton = QPushButton("清除", self)
+        self.clearFootImageButton = QPushButton("清除压力云图", self)
         self.clearFootImageButton.setCheckable(True)
-        self.saveFootDataButton = QPushButton("保存", self)
-        self.saveFootDataButton.setCheckable(True)
+        self.saveFootImageButton = QPushButton("保存压力云图", self)
+        self.saveFootImageButton.setCheckable(True)
 
     # 标签
     def showLabel(self):
@@ -107,8 +119,40 @@ class MainWindow(QMainWindow, QWidget):
     # 清空脚印压力图
     def clearFootImage(self):
         self.clearFootImageButton.setChecked(False)
+        try:
+            os.remove("../footPrints/temp.png")
+        except:
+            pass
         if self.footImage.load("../footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
+
+    # 保存脚印压力图到数据库
+    def saveFootImage(self):
+        self.saveFootImageButton.setChecked(False)
+        try:
+            imgRead = Image.open("../footPrints/temp.png")
+            self.imgSize = imgRead.size  # (320,440)
+            self.imgMode = imgRead.mode  # RGB ,str
+            byteDataToWrite = imgRead.tobytes()
+
+            currentUserName = self.getCurrentUserName() # 获得用户名+id
+            if(currentUserName==''):
+                QMessageBox.warning(self, "警告", "没有用户!无法保存压力图数据!\n请先在数据库里建立用户!", QMessageBox.Ok)
+                return False
+
+            currentUserId = self.getCurrentUserId() #获得用户id
+            self.query.prepare(""" update footdata set footImg=NULL where id=(?) """) # 清空
+            self.query.addBindValue(QVariant(currentUserId))
+            self.query.exec_()
+
+            self.query.prepare(""" update footdata set footImg=(?) where id=(?) """) # 写入
+            self.query.addBindValue(QByteArray(byteDataToWrite))
+            self.query.addBindValue(QVariant(currentUserId))
+            self.query.exec_()
+            return True
+        except:
+            QMessageBox.warning(self, "警告", "没有可以用来保存的压力图数据!", QMessageBox.Ok)
+            return False
 
     #布局
     def setupLayout(self):
@@ -125,7 +169,7 @@ class MainWindow(QMainWindow, QWidget):
 
         leftSideLayout.addWidget(self.refreshFootImageButton)
         leftSideLayout.addWidget(self.clearFootImageButton)
-        leftSideLayout.addWidget(self.saveFootDataButton)
+        leftSideLayout.addWidget(self.saveFootImageButton)
 
         mainLayout = QHBoxLayout()
         mainLayout.addStretch(1)
