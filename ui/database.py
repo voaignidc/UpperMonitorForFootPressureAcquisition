@@ -10,7 +10,7 @@ MAC = False
 ID, USERNAME, SEX, AGE = range(4)
 
 class DataBaseDlg(QDialog):
-    addRecordSignal = pyqtSignal() # 向数据库里添加了人物的信号
+    changeRecordSignal = pyqtSignal() # 改变数据库行的信号
     def __init__(self, parent=None):
         super(DataBaseDlg, self).__init__(parent)
 
@@ -46,7 +46,7 @@ class DataBaseDlg(QDialog):
         sortByAgeAction = menu.addAction("按年龄排序")
 
         sortButton.setMenu(menu)
-        closeButton = buttonBox.addButton(QDialogButtonBox.Close)#关闭按钮
+        closeButton = buttonBox.addButton("保存并退出", QDialogButtonBox.ActionRole) # 关闭按钮
 
         layout = QVBoxLayout()
         layout.addWidget(self.view)
@@ -61,22 +61,45 @@ class DataBaseDlg(QDialog):
         sortByUserNameAction.triggered.connect(lambda:self.sort(USERNAME))
         sortBySexAction.triggered.connect(lambda:self.sort(SEX))
         sortByAgeAction.triggered.connect(lambda:self.sort(AGE))
-        
-        closeButton.clicked.connect(self.accept)
+
+        closeButton.clicked.connect(self.aboutToQuit)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("数据库")
 
+    # 按下closeButton按钮会执行这个
+    def aboutToQuit(self):
+        rowCount = self.model.rowCount()  # 返回当前有几行数据
+        newRowSaved=self.model.insertRow(rowCount)  # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
+        index = self.model.index(rowCount, USERNAME) # 返回QModelIndex对象,rowCount是行的序号(从0开始)
+        self.model.removeRow(index.row())
+        if newRowSaved == False:
+            QMessageBox.warning(self,"警告","还有数据未保存!\n请按添加键保存!\n或者删除未编辑完的数据!", QMessageBox.Ok)
+        else:
+            self.accept()  # 确定并退出对话框
+
+    # 如果用户直接点红叉关闭
+    def closeEvent(self, QCloseEvent):
+        rowCount = self.model.rowCount()  # 返回当前有几行数据
+        newRowSaved=self.model.insertRow(rowCount)  # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
+        index = self.model.index(rowCount, USERNAME) # 返回QModelIndex对象,rowCount是行的序号(从0开始)
+        self.model.removeRow(index.row())
+        if newRowSaved == False:
+            QMessageBox.warning(self, "警告", "数据未保存!", QMessageBox.Ok)
+
     #向数据库添加数据
     def addRecord(self):
-        row = self.model.rowCount()
-        self.model.insertRow(row)
-        index = self.model.index(row, USERNAME)
+        rowCount = self.model.rowCount() # 返回当前有几行数据
+        self.model.insertRow(rowCount) # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
+        # 如果在这里调用rowCount = self.model.rowCount(),会发现rowCount+1了
+        index = self.model.index(rowCount, USERNAME) # 返回QModelIndex对象,rowCount是行的序号(从0开始)
         self.view.setCurrentIndex(index)
+        # 如果在这里调用nowRow = self.view.currentIndex().row(),nowRow是 QModelIndex对象所在行的序号(从0开始)
         self.view.edit(index)
-        r = self.view.currentIndex().row()# 行
-        if r == -1: # 如果输入全部数据后再按,那么r==-1
-            QMessageBox.information(self,"成功","录入成功", QMessageBox.Ok)
-            self.addRecordSignal.emit()
+
+        nowRow = self.view.currentIndex().row()
+        if nowRow == -1: # 如果新加行未编辑完时按,那么nowRow==-1
+            # QMessageBox.information(self,"成功","录入成功", QMessageBox.Ok)
+            self.changeRecordSignal.emit()
 
     #删除数据
     def deleteRecord(self):
@@ -95,6 +118,7 @@ class DataBaseDlg(QDialog):
         self.model.removeRow(index.row())
         self.model.submitAll()
         self.model.select()
+        self.changeRecordSignal.emit()
 
     #按规则排序
     def sort(self, column):

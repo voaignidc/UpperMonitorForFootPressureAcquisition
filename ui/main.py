@@ -41,22 +41,24 @@ class MainWindow(QMainWindow, QWidget):
         while self.query.next():
             name = self.query.value(0)
             self.selectUserBox.addItem(name)
-        self.dataBaseDlg.addRecordSignal.connect(self.refreshUserNameBox)
+        # 连接
+        self.dataBaseDlg.changeRecordSignal.connect(self.refreshUserNameBox)
 
     # 显示数据库
     def showDataBase(self,pressed):
         self.showDataBaseButton.setChecked(False)
         self.dataBaseDlg.show()
 
+    # 刷新用户Box
     def refreshUserNameBox(self):
-        # print('in')
+        # print('refreshUserNameBox')
         self.selectUserBox.clear() # 清空这个QComboBox
-        # print('clear')
+        # print('selectUserBox.clear')
         self.query.exec_("""select userName from footdata""")
         while self.query.next():
             name = self.query.value(0)
             self.selectUserBox.addItem(name)
-        # print('add')
+        # print('selectUserBox.addItem')
 
     #显示按钮
     def showButton(self):
