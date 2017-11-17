@@ -27,10 +27,12 @@ class MainWindow(QMainWindow, QWidget):
     #连接信号与槽
     def connectSignalSlot(self):
         self.showDataBaseButton.clicked.connect(self.showDataBase)
-        self.serialPortObject.finishSavingSingal.connect(self.refreshFootImage) # '保存完毕'信号 连 刷新图像
-        self.refreshFootImageButton.clicked.connect(self.refreshFootImage)
+        self.serialPortObject.finishSavingSingal.connect(self.refreshFootImageAfterSavingPNG) # '保存完毕'信号 连 刷新图像
+        # self.refreshFootImageButton.clicked.connect(self.refreshFootImageAfterChangeUserBox)
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
-        self.saveFootImageButton.clicked.connect(self.saveFootImage)
+        self.saveFootImageButton.clicked.connect(self.saveFootImageToDataBase)
+        self.selectUserBox.currentIndexChanged.connect(self.refreshFootImageAfterChangeUserBox)
+
 
     # 初始化数据库
     def setupDataBase(self):
@@ -55,10 +57,12 @@ class MainWindow(QMainWindow, QWidget):
     # 刷新用户Box
     def refreshUserNameBox(self):
         self.selectUserBox.clear() # 清空这个QComboBox
+        self.query = QSqlQuery()
         self.query.exec_("""select id,userName from footdata""")
         while self.query.next():
             id = self.query.value(0)
             name = self.query.value(1)
+            print(id,name)
             self.selectUserBox.addItem(name+' id='+str(id))
 
     # 获得当前是哪个用户
@@ -76,8 +80,8 @@ class MainWindow(QMainWindow, QWidget):
     def showButton(self):
         self.showDataBaseButton = QPushButton("数据库", self) # 数据库按钮在这里
         self.showDataBaseButton.setCheckable(True)
-        self.refreshFootImageButton = QPushButton("刷新压力云图", self)
-        self.refreshFootImageButton.setCheckable(True)
+        # self.refreshFootImageButton = QPushButton("刷新压力云图", self)
+        # self.refreshFootImageButton.setCheckable(True)
         self.clearFootImageButton = QPushButton("清除压力云图", self)
         self.clearFootImageButton.setCheckable(True)
         self.saveFootImageButton = QPushButton("保存压力云图", self)
@@ -108,13 +112,38 @@ class MainWindow(QMainWindow, QWidget):
         self.footImage = QImage()
         if self.footImage.load("../footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
-            # self.resize(self.footImage.width(),self.footImage.height())
+            self.resize(self.footImage.width(),self.footImage.height())
+        self.refreshFootImageAfterChangeUserBox()
 
-    # 刷新脚印压力图
-    def refreshFootImage(self):
-        self.refreshFootImageButton.setChecked(False)
+    # 刷新脚印压力图 从串口保存成png之后
+    def refreshFootImageAfterSavingPNG(self):
         if self.footImage.load("../footPrints/temp.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
+
+    # 刷新脚印压力图 改变用户Box之后
+    def refreshFootImageAfterChangeUserBox(self):
+        # self.refreshFootImageButton.setChecked(False)
+        currentUserName = self.getCurrentUserName()  # 获得用户名+id
+        if (currentUserName == ''):
+            # QMessageBox.warning(self, "警告", "没有用户!", QMessageBox.Ok)
+            return False
+        currentUserId = self.getCurrentUserId()  # 获得用户id
+
+        self.query.prepare(""" select footImg from footdata where id=(?) """)
+        self.query.addBindValue(QVariant(currentUserId))
+        self.query.exec_()
+        while self.query.next():
+            byteDataReaded = self.query.value(0)
+            try: # 此用户数据库中有压力图
+                img = Image.frombytes('RGB', (320, 440), byteDataReaded)
+                img.save('../footPrints/temp.png')
+                if self.footImage.load("../footPrints/temp.png"):
+                    self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
+                    return True
+            except: # 此用户数据库中没有压力图(还未采集)
+                if self.footImage.load("../footPrints/blank.png"):
+                    self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
+                return False
 
     # 清空脚印压力图
     def clearFootImage(self):
@@ -127,7 +156,7 @@ class MainWindow(QMainWindow, QWidget):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
     # 保存脚印压力图到数据库
-    def saveFootImage(self):
+    def saveFootImageToDataBase(self):
         self.saveFootImageButton.setChecked(False)
         try:
             imgRead = Image.open("../footPrints/temp.png")
@@ -149,6 +178,8 @@ class MainWindow(QMainWindow, QWidget):
             self.query.addBindValue(QByteArray(byteDataToWrite))
             self.query.addBindValue(QVariant(currentUserId))
             self.query.exec_()
+
+            QMessageBox.information(self, "成功", "成功保存压力图数据", QMessageBox.Ok)
             return True
         except:
             QMessageBox.warning(self, "警告", "没有可以用来保存的压力图数据!", QMessageBox.Ok)
@@ -167,7 +198,7 @@ class MainWindow(QMainWindow, QWidget):
 
         self.serialPortObject.setupLayout(leftSideLayout)
 
-        leftSideLayout.addWidget(self.refreshFootImageButton)
+        # leftSideLayout.addWidget(self.refreshFootImageButton)
         leftSideLayout.addWidget(self.clearFootImageButton)
         leftSideLayout.addWidget(self.saveFootImageButton)
 

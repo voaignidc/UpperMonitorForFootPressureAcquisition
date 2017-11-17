@@ -101,6 +101,8 @@ class DataBaseDlg(QDialog):
         nowRow = self.view.currentIndex().row()
         if nowRow == -1: # 如果新加行未编辑完时按,那么nowRow==-1
             # QMessageBox.information(self,"成功","录入成功", QMessageBox.Ok)
+            self.model.submitAll()
+            print('add')
             self.changeRecordSignal.emit()
 
     #删除数据
@@ -145,7 +147,7 @@ def setupDatabase():
         query.exec_("""CREATE TABLE footdata (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 userName VARCHAR(255) NOT NULL,
-                sex VARCHAR(255) NOT NULL,
+                sex VARCHAR(255),
                 age VARCHAR(255),
                 footImg BLOB)""")
     
