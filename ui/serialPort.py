@@ -58,14 +58,15 @@ class SerialPortClass(QWidget):
             self.serial.baudrate = bandRate  # 设置波特率
             self.serial.close()
             QMessageBox.information(None, '端口', "端口可用", QMessageBox.Ok)
+            return True
         except:
             QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
+            return False
 
     # 开始采集
     def startCollect(self, pressed):
         if pressed and self.portStatus == False:
             self.startCollectButton.setChecked(False)
-            self.startCollectButton.setEnabled(False) # 禁用一下
             portName = self.portBox.currentText()  # str  "COM8"
             bandRate = int(self.baudRateBox.currentText())  # int    9600
 
@@ -73,12 +74,14 @@ class SerialPortClass(QWidget):
                 self.serial = serial.Serial(portName)  # 设置串口号
                 self.serial.baudrate = bandRate  # 设置波特率
             except:
+                self.serial.close()  # 关掉串口
                 QMessageBox.warning(None, '端口警告', "端口无效或者不存在", QMessageBox.Ok)
+                return False
 
+            self.startCollectButton.setEnabled(False) # 禁用一下
             self.portStatus = True
             self.savingData()
-        else:
-            pass
+            return True
 
     # 保存脚印
     def savingData(self):
