@@ -5,6 +5,9 @@ import numpy as np
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+
+
+
 # 图像是 44行 32列
 # 转成 440行 320列
 

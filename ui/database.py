@@ -6,6 +6,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
+
+
 MAC = False
 ID, USERNAME, SEX, AGE = range(4)
 
@@ -142,9 +144,9 @@ def setupDatabase():
         query = QSqlQuery()
         query.exec_("""CREATE TABLE footdata (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
-                userName VARCHAR(80) NOT NULL,
-                sex VARCHAR(30) NOT NULL,
-                age VARCHAR(20))""")
+                userName VARCHAR(255) NOT NULL,
+                sex VARCHAR(255) NOT NULL,
+                age VARCHAR(255))""")
     
 '''以下主函数'''
 setupDatabase()
