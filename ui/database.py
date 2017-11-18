@@ -10,7 +10,7 @@ MAC = False
 ID, USERNAME, SEX, AGE ,FOOTIMG= range(5)
 
 class DataBaseDlg(QDialog):
-    changeRecordSignal = pyqtSignal() # 改变数据库行的信号
+    dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
     def __init__(self, parent=None):
         super(DataBaseDlg, self).__init__(parent)
 
@@ -101,9 +101,8 @@ class DataBaseDlg(QDialog):
         nowRow = self.view.currentIndex().row()
         if nowRow == -1: # 如果新加行未编辑完时按,那么nowRow==-1
             # QMessageBox.information(self,"成功","录入成功", QMessageBox.Ok)
-            self.model.submitAll()
-            print('add')
-            self.changeRecordSignal.emit()
+            print('addRecord Fun in db.py')
+            self.dataBaseRecordChangeSignal.emit()
 
     #删除数据
     def deleteRecord(self):
@@ -122,7 +121,7 @@ class DataBaseDlg(QDialog):
         self.model.removeRow(index.row())
         self.model.submitAll()
         self.model.select()
-        self.changeRecordSignal.emit()
+        self.dataBaseRecordChangeSignal.emit()
 
     #按规则排序
     def sort(self, column):

@@ -27,18 +27,19 @@ class MainWindow(QMainWindow, QWidget):
     #连接信号与槽
     def connectSignalSlot(self):
         self.showDataBaseButton.clicked.connect(self.showDataBase)
-        self.serialPortObject.finishSavingSingal.connect(self.refreshFootImageAfterSavingPNG) # '保存完毕'信号 连 刷新图像
+        self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG) # '保存完毕'信号 连 刷新图像
         # self.refreshFootImageButton.clicked.connect(self.refreshFootImageAfterChangeUserBox)
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
         self.saveFootImageButton.clicked.connect(self.saveFootImageToDataBase)
-        self.selectUserBox.currentIndexChanged.connect(self.refreshFootImageAfterChangeUserBox)
 
+        # activated是用户点击QComboBox后才产生的信号,程序改变QComboBox则不产生此信号
+        self.selectUserBox.activated[int].connect(self.refreshFootImageAfterChangeUserBox)
 
     # 初始化数据库
     def setupDataBase(self):
         self.dataBaseDlg = database.DataBaseDlg()
         self.selectUserLabel = QLabel("选择用户",self)
-        self.selectUserBox = QComboBox(self)
+        self.selectUserBox = QComboBox()
 
         self.query = QSqlQuery()
         self.query.exec_("""select id,userName from footdata""")
@@ -47,10 +48,10 @@ class MainWindow(QMainWindow, QWidget):
             name = self.query.value(1)
             self.selectUserBox.addItem(name+' id='+str(id))
         # 连接
-        self.dataBaseDlg.changeRecordSignal.connect(self.refreshUserNameBox)
+        self.dataBaseDlg.dataBaseRecordChangeSignal.connect(self.refreshUserNameBox)
 
     # 显示数据库
-    def showDataBase(self,pressed):
+    def showDataBase(self):
         self.showDataBaseButton.setChecked(False)
         self.dataBaseDlg.show()
 
@@ -113,7 +114,7 @@ class MainWindow(QMainWindow, QWidget):
         if self.footImage.load("../footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
             self.resize(self.footImage.width(),self.footImage.height())
-        self.refreshFootImageAfterChangeUserBox()
+        self.refreshFootImageAfterChangeUserBox(0)
 
     # 刷新脚印压力图 从串口保存成png之后
     def refreshFootImageAfterSavingPNG(self):
@@ -121,10 +122,11 @@ class MainWindow(QMainWindow, QWidget):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
     # 刷新脚印压力图 改变用户Box之后
-    def refreshFootImageAfterChangeUserBox(self):
+    def refreshFootImageAfterChangeUserBox(self, uselessVar):
         # self.refreshFootImageButton.setChecked(False)
         currentUserName = self.getCurrentUserName()  # 获得用户名+id
         if (currentUserName == ''):
+            print('没有用户')
             # QMessageBox.warning(self, "警告", "没有用户!", QMessageBox.Ok)
             return False
         currentUserId = self.getCurrentUserId()  # 获得用户id

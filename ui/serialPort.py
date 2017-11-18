@@ -8,7 +8,7 @@ import convert
 
 # 串口类
 class SerialPortClass(QWidget):
-    finishSavingSingal = pyqtSignal()  # 结束信号
+    finishSavingPNGSingal = pyqtSignal()  # 结束信号
     def __init__(self):
         super().__init__()
         self.setupUi()
@@ -98,7 +98,7 @@ class SerialPortClass(QWidget):
         self.convertProcessDlg.close() # 关闭这个对话框
         self.portStatus = False
         self.startCollectButton.setEnabled(True)
-        self.finishSavingSingal.emit() # 发射'保存完毕'信号
+        self.finishSavingPNGSingal.emit() # 发射'保存完毕'信号
 
     # 布局
     def setupLayout(self, fatherLayout):
