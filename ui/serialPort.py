@@ -38,9 +38,8 @@ class SerialPortClass(QWidget):
         # 串口号选择
         self.portLabel = QLabel("串口选择",self)
         self.portBox = QComboBox(self)
-        self.portBox.addItem("COM3")
-        # for i in range(8):
-        #     self.portBox.addItem("COM" + str(i))
+        for i in range(8):
+            self.portBox.addItem("COM" + str(i))
 
         # 波特率选择
         self.baudRateLabel = QLabel("波特率选择", self)

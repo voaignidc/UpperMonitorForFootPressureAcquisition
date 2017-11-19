@@ -9,10 +9,10 @@ from PyQt5.QtSql import *
 MAC = False
 ID, USERNAME, SEX, AGE ,FOOTIMG= range(5)
 
-class DataBaseDlg(QDialog):
+class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
     def __init__(self, parent=None):
-        super(DataBaseDlg, self).__init__(parent)
+        super(AdminDataBaseDlg, self).__init__(parent)
 
         self.model = QSqlTableModel(self)
         self.model.setTable("footdata") # 数据库名称

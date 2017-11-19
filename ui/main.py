@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 
-import database, serialPort
+import adminDataBase, serialPort
 
 # 主窗口
 class MainWindow(QMainWindow, QWidget):
@@ -26,7 +26,7 @@ class MainWindow(QMainWindow, QWidget):
 
     #连接信号与槽
     def connectSignalSlot(self):
-        self.showDataBaseButton.clicked.connect(self.showDataBase)
+        self.showAdminDataBaseDlgButton.clicked.connect(self.showAdminDataBaseDlg)
         self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG) # '保存完毕'信号 连 刷新图像
         # self.refreshFootImageButton.clicked.connect(self.refreshFootImageAfterChangeUserBox)
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
@@ -37,7 +37,7 @@ class MainWindow(QMainWindow, QWidget):
 
     # 初始化数据库
     def setupDataBase(self):
-        self.dataBaseDlg = database.DataBaseDlg()
+        self.adminDataBaseDlg = adminDataBase.AdminDataBaseDlg()
         self.selectUserLabel = QLabel("选择用户",self)
         self.selectUserBox = QComboBox()
 
@@ -48,12 +48,12 @@ class MainWindow(QMainWindow, QWidget):
             name = self.query.value(1)
             self.selectUserBox.addItem(name+' id='+str(id))
         # 连接
-        self.dataBaseDlg.dataBaseRecordChangeSignal.connect(self.refreshUserNameBox)
+        self.adminDataBaseDlg.dataBaseRecordChangeSignal.connect(self.refreshUserNameBox)
 
     # 显示数据库
-    def showDataBase(self):
-        self.showDataBaseButton.setChecked(False)
-        self.dataBaseDlg.show()
+    def showAdminDataBaseDlg(self):
+        self.showAdminDataBaseDlgButton.setChecked(False)
+        self.adminDataBaseDlg.show()
 
     # 刷新用户Box
     def refreshUserNameBox(self):
@@ -79,8 +79,8 @@ class MainWindow(QMainWindow, QWidget):
 
     #显示按钮
     def showButton(self):
-        self.showDataBaseButton = QPushButton("数据库", self) # 数据库按钮在这里
-        self.showDataBaseButton.setCheckable(True)
+        self.showAdminDataBaseDlgButton = QPushButton("数据库", self) # 数据库按钮在这里
+        self.showAdminDataBaseDlgButton.setCheckable(True)
         # self.refreshFootImageButton = QPushButton("刷新压力云图", self)
         # self.refreshFootImageButton.setCheckable(True)
         self.clearFootImageButton = QPushButton("清除压力云图", self)
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow, QWidget):
         if self.footImage.load("../footPrints/temp.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
-    # 刷新脚印压力图 改变用户Box之后
+    # 刷新脚印压力图 (人为鼠标点击改变,而不是程序改变)改变用户Box之后
     def refreshFootImageAfterChangeUserBox(self, uselessVar):
         # self.refreshFootImageButton.setChecked(False)
         currentUserName = self.getCurrentUserName()  # 获得用户名+id
@@ -192,7 +192,7 @@ class MainWindow(QMainWindow, QWidget):
         leftSideLayout = QVBoxLayout()
         leftSideLayout.addStretch(0)
 
-        leftSideLayout.addWidget(self.showDataBaseButton)
+        leftSideLayout.addWidget(self.showAdminDataBaseDlgButton)
         leftSideLayout.addWidget(self.selectUserLabel)
         leftSideLayout.addWidget(self.selectUserBox)
         # leftSideLayout.addWidget(self.selectPoiseLabel)
