@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 MAC = False
-ID, USERNAME, SEX, AGE ,FOOTIMG= range(5)
+ID, USERNAME, SEX, AGE , FOOTIMG= range(5)
 
 class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号

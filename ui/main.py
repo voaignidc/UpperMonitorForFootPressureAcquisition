@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 
-import adminDataBase, serialPort
+import adminDataBase, serialPort, userInput
 
 # 主窗口
 class MainWindow(QMainWindow, QWidget):
@@ -17,6 +17,7 @@ class MainWindow(QMainWindow, QWidget):
 
     def setupUi(self):
         self.setupDataBase()
+        self.setupUserInputDlg()
         # self.showLabel()
         self.showButton()
         self.showImage()
@@ -26,6 +27,7 @@ class MainWindow(QMainWindow, QWidget):
 
     #连接信号与槽
     def connectSignalSlot(self):
+        self.showUserInputDlgButton.clicked.connect(self.showUserInputDlg)
         self.showAdminDataBaseDlgButton.clicked.connect(self.showAdminDataBaseDlg)
         self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG) # '保存完毕'信号 连 刷新图像
         # self.refreshFootImageButton.clicked.connect(self.refreshFootImageAfterChangeUserBox)
@@ -79,23 +81,32 @@ class MainWindow(QMainWindow, QWidget):
 
     #显示按钮
     def showButton(self):
-        self.showAdminDataBaseDlgButton = QPushButton("数据库", self) # 数据库按钮在这里
+        self.showUserInputDlgButton = QPushButton("信息录入", self)
+        self.showUserInputDlgButton.setCheckable(True)
+        self.showAdminDataBaseDlgButton = QPushButton("用户管理", self) # 数据库按钮在这里
         self.showAdminDataBaseDlgButton.setCheckable(True)
-        # self.refreshFootImageButton = QPushButton("刷新压力云图", self)
+        # self.refreshFootImageButton = QPushButton("刷新压力图", self)
         # self.refreshFootImageButton.setCheckable(True)
-        self.clearFootImageButton = QPushButton("清除压力云图", self)
+        self.clearFootImageButton = QPushButton("清除压力图", self)
         self.clearFootImageButton.setCheckable(True)
-        self.saveFootImageButton = QPushButton("保存压力云图", self)
+        self.saveFootImageButton = QPushButton("保存压力图", self)
         self.saveFootImageButton.setCheckable(True)
+
+    def setupUserInputDlg(self):
+        self.userInputDlg = userInput.UserInputDlg()
+
+    def showUserInputDlg(self):
+        self.showUserInputDlgButton.setChecked(False)
+        self.userInputDlg.show()
 
     # 标签
     def showLabel(self):
-        pass
         # self.selectPoiseLabel = QLabel("选择站姿", self)
         # self.selectPoiseBox = QComboBox(self)
         # self.selectPoiseBox.addItem("双脚")
         # self.selectPoiseBox.addItem("左脚")
         # self.selectPoiseBox.addItem("右脚")
+        pass
 
     #显示两个图
     def showImage(self):
@@ -192,6 +203,7 @@ class MainWindow(QMainWindow, QWidget):
         leftSideLayout = QVBoxLayout()
         leftSideLayout.addStretch(0)
 
+        leftSideLayout.addWidget(self.showUserInputDlgButton)
         leftSideLayout.addWidget(self.showAdminDataBaseDlgButton)
         leftSideLayout.addWidget(self.selectUserLabel)
         leftSideLayout.addWidget(self.selectUserBox)
