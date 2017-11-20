@@ -129,7 +129,7 @@ class MainWindow(QMainWindow, QWidget):
 
     # 刷新脚印压力图 从串口保存成png之后
     def refreshFootImageAfterSavingPNG(self):
-        if self.footImage.load("../footPrints/temp.png"):
+        if self.footImage.load("../footPrints/tempBig.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
     # 刷新脚印压力图 (人为鼠标点击改变,而不是程序改变)改变用户Box之后
@@ -148,9 +148,11 @@ class MainWindow(QMainWindow, QWidget):
         while self.query.next():
             byteDataReaded = self.query.value(0)
             try: # 此用户数据库中有压力图
-                img = Image.frombytes('RGB', (320, 440), byteDataReaded)
-                img.save('../footPrints/temp.png')
-                if self.footImage.load("../footPrints/temp.png"):
+                imgSmall = Image.frombytes('RGB', (32, 44), byteDataReaded)
+                imgSmall.save('../footPrints/tempSmall.png')
+                imgBig = imgSmall.resize((320, 440))
+                imgBig.save('../footPrints/tempBig.png')
+                if self.footImage.load("../footPrints/tempBig.png"):
                     self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
                     return True
             except: # 此用户数据库中没有压力图(还未采集)
@@ -162,7 +164,8 @@ class MainWindow(QMainWindow, QWidget):
     def clearFootImage(self):
         self.clearFootImageButton.setChecked(False)
         try:
-            os.remove("../footPrints/temp.png")
+            os.remove("../footPrints/tempBig.png")
+            os.remove("../footPrints/tempSmall.png")
         except:
             pass
         if self.footImage.load("../footPrints/blank.png"):
@@ -172,9 +175,9 @@ class MainWindow(QMainWindow, QWidget):
     def saveFootImageToDataBase(self):
         self.saveFootImageButton.setChecked(False)
         try:
-            imgRead = Image.open("../footPrints/temp.png")
-            self.imgSize = imgRead.size  # (320,440)
-            self.imgMode = imgRead.mode  # RGB ,str
+            imgRead = Image.open("../footPrints/tempSmall.png")
+            # self.imgSize = imgRead.size  # (320,440)
+            # self.imgMode = imgRead.mode  # RGB ,str
             byteDataToWrite = imgRead.tobytes()
 
             currentUserName = self.getCurrentUserName() # 获得用户名+id

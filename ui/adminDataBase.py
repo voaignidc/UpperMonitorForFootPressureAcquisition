@@ -130,7 +130,7 @@ class AdminDataBaseDlg(QDialog):
 
 #初始化数据库
 def setupDatabase():
-    filename = os.path.join(os.path.dirname(__file__), "footdata.db")
+    filename = os.path.join(os.path.dirname(__file__), "../dataBaseFile/footdata.db")
     create = not QFile.exists(filename)
 
     # 连接数据库
