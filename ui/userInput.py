@@ -13,6 +13,7 @@ class UserInputDlg(QDialog):
         super().__init__()
         self.setupUi()
         self.setupLayout()
+        self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("用户信息录入")
 
@@ -51,6 +52,7 @@ class UserInputDlg(QDialog):
 
     def setupLayout(self):
         self.gridLayout = QGridLayout()
+        self.gridLayout.setSpacing(10)
         self.setLayout(self.gridLayout)
 
         self.gridLayout.addWidget(self.basicInfoLabel, *(0,0))

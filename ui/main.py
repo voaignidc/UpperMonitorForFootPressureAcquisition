@@ -207,7 +207,7 @@ class MainWindow(QMainWindow, QWidget):
     #布局
     def setupLayout(self):
         leftSideLayout = QVBoxLayout()
-        leftSideLayout.addStretch(0)
+        leftSideLayout.addStretch(1)
 
         leftSideLayout.addWidget(self.showUserInputDlgButton)
         leftSideLayout.addWidget(self.showAdminDataBaseDlgButton)
@@ -237,7 +237,7 @@ class MainWindow(QMainWindow, QWidget):
 
 '''以下主函数'''
 app = QApplication(sys.argv)
-app.setApplicationName("脚印采集系统")
+app.setApplicationName("足部压力采集系统")
 app.setQuitOnLastWindowClosed(True)
 
 window = MainWindow()

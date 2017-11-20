@@ -16,6 +16,7 @@ class ConvertProcessDlg(QDialog):
         self.serial = serial
         self.setupUi()
 
+
     def setupUi(self):
         self.alertLabel = QLabel("采集中,请稍后...\n采集成功后记得先按保存!", self)
         self.readingUselessDataBar = QProgressBar(self)
@@ -23,6 +24,7 @@ class ConvertProcessDlg(QDialog):
         self.readingUselessDataBar.setValue(0)
         self.readingUsefulDataBar.setValue(0)
         self.setupLayout()
+        self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowTitle("读取数据")
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.resize(400, 100)

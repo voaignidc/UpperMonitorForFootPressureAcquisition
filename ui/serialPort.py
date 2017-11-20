@@ -13,6 +13,7 @@ class SerialPortClass(QWidget):
         super().__init__()
         self.setupUi()
 
+
     def setupUi(self):
         self.showButton()
         self.setupPort()

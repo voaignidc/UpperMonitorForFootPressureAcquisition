@@ -72,6 +72,7 @@ class AdminDataBaseDlg(QDialog):
         sortByAgeAction.triggered.connect(lambda:self.sort(AGE))
 
         closeButton.clicked.connect(self.aboutToQuit)
+        self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("数据库")
         self.resize(500,300)
