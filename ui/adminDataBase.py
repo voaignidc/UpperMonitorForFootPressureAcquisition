@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 MAC = False
-ID, USERNAME, SEX, AGE , FOOTIMG= range(5)
+ID, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, QQNUMBER = range(9)
 
 class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
@@ -19,9 +19,14 @@ class AdminDataBaseDlg(QDialog):
         self.model.setSort(ID, Qt.AscendingOrder) # 默认用ID排序
         self.model.setHeaderData(ID, Qt.Horizontal, "用户ID")
         self.model.setHeaderData(USERNAME, Qt.Horizontal,"用户名")
+        self.model.setHeaderData(FOOTIMG, Qt.Horizontal, "足部压力数据")
         self.model.setHeaderData(SEX, Qt.Horizontal,"性别")
         self.model.setHeaderData(AGE, Qt.Horizontal,"年龄")
-        self.model.setHeaderData(FOOTIMG, Qt.Horizontal,"足部压力数据")
+        self.model.setHeaderData(HEIGHT, Qt.Horizontal,"身高")
+        self.model.setHeaderData(WEIGHT, Qt.Horizontal,"体重")
+        self.model.setHeaderData(PHONENUMBER, Qt.Horizontal,"手机")
+        self.model.setHeaderData(QQNUMBER, Qt.Horizontal,"QQ")
+
         self.model.select()
 
         self.view = QTableView()
@@ -67,6 +72,7 @@ class AdminDataBaseDlg(QDialog):
         closeButton.clicked.connect(self.aboutToQuit)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("数据库")
+        self.resize(500,300)
 
     # 按下closeButton按钮会执行这个
     def aboutToQuit(self):
@@ -146,9 +152,14 @@ def setupDatabase():
         query.exec_("""CREATE TABLE footdata (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
                 userName VARCHAR(255) NOT NULL,
+                footImg BLOB,
                 sex VARCHAR(255),
                 age VARCHAR(255),
-                footImg BLOB)""")
+                height VARCHAR(255),
+                weight VARCHAR(255),
+                phoneNumber VARCHAR(255),
+                qqNumber VARCHAR(255)
+                )""")
     
 '''以下主函数'''
 setupDatabase()

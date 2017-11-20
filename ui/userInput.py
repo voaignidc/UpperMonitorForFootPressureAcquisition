@@ -6,7 +6,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
-ID, USERNAME, SEX, AGE, FOOTIMG = range(5)
+ID, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, QQNUMBER = range(9)
 
 class UserInputDlg(QDialog):
     def __init__(self):
