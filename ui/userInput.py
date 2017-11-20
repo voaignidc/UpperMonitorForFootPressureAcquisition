@@ -13,6 +13,9 @@ class UserInputDlg(QDialog):
         super().__init__()
         self.setupUi()
         self.setupLayout()
+        self.showUi()
+
+    def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("用户信息录入")

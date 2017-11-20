@@ -15,7 +15,11 @@ class ConvertProcessDlg(QDialog):
         super().__init__()
         self.serial = serial
         self.setupUi()
-
+        self.setupLayout()
+        self.showUi()
+        # 开一个新线程来读数据
+        self.convertProcessThread = ConvertProcessThread(self.serial) # 注意self.serial的位置
+        self.connectSignalSlot()
 
     def setupUi(self):
         self.alertLabel = QLabel("采集中,请稍后...\n采集成功后记得先按保存!", self)
@@ -23,16 +27,13 @@ class ConvertProcessDlg(QDialog):
         self.readingUsefulDataBar = QProgressBar(self)
         self.readingUselessDataBar.setValue(0)
         self.readingUsefulDataBar.setValue(0)
-        self.setupLayout()
+
+    def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowTitle("读取数据")
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.resize(400, 100)
         self.show()
-
-        # 开一个新线程来读数据
-        self.convertProcessThread = ConvertProcessThread(self.serial) # 注意self.serial的位置
-        self.connectSignalSlot()
 
     # 连接
     def connectSignalSlot(self):
@@ -47,6 +48,13 @@ class ConvertProcessDlg(QDialog):
     def refreshUsefulDataBar(self, value):
         self.readingUsefulDataBar.setValue(value)
 
+    # 如果用户直接点红叉关闭
+    def closeEvent(self, QCloseEvent):
+        if  self.convertProcessThread.isRunning():
+            self.convertProcessThread.forceQuitSingal.emit() # 发射'强制退出'信号
+            self.convertProcessThread.terminate()
+            self.convertProcessThread.quit()
+
     def setupLayout(self):
         mainLayout = QVBoxLayout()
         mainLayout.addStretch(1)
@@ -58,7 +66,8 @@ class ConvertProcessDlg(QDialog):
 
 # 读取数据的新线程
 class ConvertProcessThread(QThread):
-    finishConvertSingal =  pyqtSignal() # 结束信号
+    finishConvertSingal =  pyqtSignal() # 数据接收完毕信号
+    forceQuitSingal =  pyqtSignal() # 强制退出 数据接收 的信号
     uselessDataIndexSingal = pyqtSignal(int)
     usefulDataIndexSingal = pyqtSignal(int)
     def __init__(self, serial):

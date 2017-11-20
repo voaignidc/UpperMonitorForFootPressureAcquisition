@@ -11,10 +11,6 @@ class SerialPortClass(QWidget):
     finishSavingPNGSingal = pyqtSignal()  # 结束信号
     def __init__(self):
         super().__init__()
-        self.setupUi()
-
-
-    def setupUi(self):
         self.showButton()
         self.setupPort()
         self.connectSignalSlot()
@@ -89,7 +85,15 @@ class SerialPortClass(QWidget):
         self.convertProcessDlg = convert.ConvertProcessDlg(self.serial)
         # '转换结束'信号连接到 finishSavingData
         self.convertProcessDlg.convertProcessThread.finishConvertSingal.connect(self.finishSavingData)
+        self.convertProcessDlg.convertProcessThread.forceQuitSingal.connect(self.quitSavingData)
         self.convertProcessDlg.convertProcessThread.start()
+
+    # 退出接收数据
+    def quitSavingData(self):
+        self.serial.close()  # 最后,关掉串口
+        self.convertProcessDlg.close() # 关闭这个对话框
+        self.portStatus = False
+        self.startCollectButton.setEnabled(True)
 
     # 结束保存脚印数据
     def finishSavingData(self):

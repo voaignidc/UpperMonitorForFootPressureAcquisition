@@ -11,9 +11,15 @@ class SignInDlg(QDialog):
         super().__init__()
         self.setupUi()
         self.setupLayout()
+        self.showUi()
+
+    def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint) # 关闭问号
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("登录")
+
+    def signIn(self):
+        pass
 
     def setupUi(self):
         self.titleLabel = QLabel("足部压力采集系统", self)
@@ -28,7 +34,6 @@ class SignInDlg(QDialog):
         self.signUpButton = QPushButton("注册", self)
 
     def setupLayout(self):
-
         self.gridLayout = QGridLayout()
         self.gridLayout.addWidget(self.titleLabel, *(0, 0), *(1, 0)) # 前两个数,是起始位置;后两个数,是行跨度和列跨度
         self.gridLayout.addWidget(self.accountNameLabel, *(1, 0))
@@ -47,10 +52,10 @@ class SignInDlg(QDialog):
 
 
 
-app = QApplication(sys.argv)
-app.setQuitOnLastWindowClosed(True)
-
-window = SignInDlg()
-window.show()
-
-sys.exit(app.exec_())
+# app = QApplication(sys.argv)
+# app.setQuitOnLastWindowClosed(True)
+#
+# window = SignInDlg()
+# window.show()
+#
+# sys.exit(app.exec_())
