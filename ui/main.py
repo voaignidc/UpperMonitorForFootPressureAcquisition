@@ -7,19 +7,25 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 
-import adminDataBase, serialPort, userInput, currentTime
+import adminDataBase, serialPort, userInput, currentTime, signIn
 
 # 主窗口
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
         super().__init__()
         self.setupDataBase()
-        self.setupUserInputDlg()
-        self.serialPortObject = serialPort.SerialPortClass()
-        self.setupUi()
-        self.setupLayout()
-        self.connectSignalSlot()
-        self.showUi()
+        if self.setupSignInDlg():
+            self.setupUserInputDlg()
+            self.serialPortObject = serialPort.SerialPortClass()
+            self.setupUi()
+            self.setupLayout()
+            self.connectSignalSlot()
+            self.showUi()
+
+    def setupSignInDlg(self):
+        self.signInDlg = signIn.SignInDlg()
+        return False
+
 
     def setupUi(self):
         self.showButton()

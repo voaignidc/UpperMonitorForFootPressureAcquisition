@@ -11,24 +11,43 @@ class SignInDlg(QDialog):
         super().__init__()
         self.setupUi()
         self.setupLayout()
+        self.connectSignalSlot()
         self.showUi()
 
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint) # 关闭问号
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("登录")
+        self.show()
 
+    def connectSignalSlot(self):
+        self.signInButton.clicked.connect(self.signIn)
+
+    # 获得账号名及密码
+    def getAccount(self):
+        accountName = self.accountNameLineEdit.text()
+        accountPassword = self.accountPasswordLineEdit.text()
+        print(accountName)
+        print(accountPassword)
+
+    # 登录
     def signIn(self):
-        pass
+        self.getAccount()
+        self.signInButton.setChecked(False)
 
     def setupUi(self):
         self.titleLabel = QLabel("足部压力采集系统", self)
         self.titleLabel.setFont(QFont("Roman times", 12, QFont.Bold))
         self.titleLabel.setAlignment(Qt.AlignCenter)
+
         self.accountNameLabel = QLabel("账号:  ", self)
         self.accountNameLineEdit = QLineEdit(self)
+        self.accountNameLineEdit.setPlaceholderText("3-18个英文或数字")
+
         self.accountPasswordLabel = QLabel("密码:  ", self)
         self.accountPasswordLineEdit = QLineEdit(self)
+        self.accountPasswordLineEdit.setEchoMode(QLineEdit.Password) # 用小黑点覆盖你所输入的字符
+        self.accountPasswordLineEdit.setPlaceholderText("3-18个英文或数字")
 
         self.signInButton = QPushButton("登录", self)
         self.signUpButton = QPushButton("注册", self)
