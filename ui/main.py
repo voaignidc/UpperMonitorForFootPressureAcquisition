@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 
-import adminDataBase, serialPort, userInput
+import adminDataBase, serialPort, userInput, currentTime
 
 # 主窗口
 class MainWindow(QMainWindow, QWidget):
@@ -92,12 +92,15 @@ class MainWindow(QMainWindow, QWidget):
         self.saveFootImageButton = QPushButton("保存压力图", self)
         self.saveFootImageButton.setCheckable(True)
 
+    # 初始化 用户录入 对话框
     def setupUserInputDlg(self):
         self.userInputDlg = userInput.UserInputDlg()
 
+    # 显示 用户录入 对话框
     def showUserInputDlg(self):
         self.showUserInputDlgButton.setChecked(False)
         self.userInputDlg.show()
+        self.userInputDlg.collectTimeLineEdit.setText(currentTime.getCurrentTime())
 
     # 标签
     def showLabel(self):

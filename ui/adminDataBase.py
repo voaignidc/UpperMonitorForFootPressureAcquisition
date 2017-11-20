@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 MAC = False
-ID, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, QQNUMBER = range(9)
+ID, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, QQNUMBER, COLLECTTIME, COLLECTORNAME = range(11)
 
 class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
@@ -26,6 +26,8 @@ class AdminDataBaseDlg(QDialog):
         self.model.setHeaderData(WEIGHT, Qt.Horizontal,"体重")
         self.model.setHeaderData(PHONENUMBER, Qt.Horizontal,"手机")
         self.model.setHeaderData(QQNUMBER, Qt.Horizontal,"QQ")
+        self.model.setHeaderData(COLLECTTIME, Qt.Horizontal,"时间")
+        self.model.setHeaderData(COLLECTORNAME, Qt.Horizontal,"操作员")
 
         self.model.select()
 
@@ -158,7 +160,9 @@ def setupDatabase():
                 height VARCHAR(255),
                 weight VARCHAR(255),
                 phoneNumber VARCHAR(255),
-                qqNumber VARCHAR(255)
+                qqNumber VARCHAR(255),
+                collectTime VARCHAR(255),
+                collectorName VARCHAR(255)
                 )""")
     
 '''以下主函数'''
