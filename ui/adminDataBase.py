@@ -113,7 +113,7 @@ class AdminDataBaseDlg(QDialog):
         nowRow = self.view.currentIndex().row()
         if nowRow == -1: # 如果新加行未编辑完时按,那么nowRow==-1
             # QMessageBox.information(self,"成功","录入成功", QMessageBox.Ok)
-            print('addRecord Fun in db.py')
+            # print('addRecord Fun in db.py')
             self.dataBaseRecordChangeSignal.emit()
 
     #删除数据

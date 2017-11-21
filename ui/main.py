@@ -13,7 +13,8 @@ import adminDataBase, serialPort, userInput, currentTime, signIn
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
         super().__init__()
-        self._adminPermission = False
+        self._adminPermission = False # 管理员权限标志
+        self.newAccount = False # 是新账户标志
         self.setupDataBase()
         self.setupSignInDlg()
 
@@ -22,8 +23,13 @@ class MainWindow(QMainWindow, QWidget):
         self.signInDlg = signIn.SignInDlg()
         self.signInDlg.signInSignal.connect(self.setupMainWindow) # 只有登录了,才能显示主窗口
         self.signInDlg.adminPermissionSignal.connect(self.getAdminPermission)
+        self.signInDlg.newUserSignUpSignal.connect(self.signUpAsNewUser)
 
-    #获得管理员权限
+    # 新用户注册
+    def signUpAsNewUser(self):
+        self.newAccount = True
+
+    # 获得管理员权限
     def getAdminPermission(self):
         self._adminPermission = True
         print('getAdminPermission')
@@ -37,6 +43,9 @@ class MainWindow(QMainWindow, QWidget):
         self.setupLayout()
         self.connectSignalSlot()
         self.showUi()
+        if self.newAccount:
+            self.userInputDlg.show()
+            self.userInputDlg.collectTimeLineEdit.setText(currentTime.getCurrentTime())
 
     # 初始化主窗口Ui
     def setupUi(self):
