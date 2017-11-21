@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 MAC = False
-ID, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, QQNUMBER, COLLECTTIME, COLLECTORNAME = range(11)
+ID, ACCOUNTNAME, ACCOUNTPASSWORD, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, \
+QQNUMBER, COLLECTTIME, COLLECTORNAME = range(13)
 
 class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
@@ -17,8 +18,10 @@ class AdminDataBaseDlg(QDialog):
         self.model = QSqlTableModel(self)
         self.model.setTable("footdata") # 数据库名称
         self.model.setSort(ID, Qt.AscendingOrder) # 默认用ID排序
-        self.model.setHeaderData(ID, Qt.Horizontal, "用户ID")
-        self.model.setHeaderData(USERNAME, Qt.Horizontal,"用户名")
+        self.model.setHeaderData(ID, Qt.Horizontal, "ID")
+        self.model.setHeaderData(ACCOUNTNAME, Qt.Horizontal, "账户名")
+        self.model.setHeaderData(ACCOUNTPASSWORD, Qt.Horizontal, "账户密码")
+        self.model.setHeaderData(USERNAME, Qt.Horizontal,"姓名")
         self.model.setHeaderData(FOOTIMG, Qt.Horizontal, "足部压力数据")
         self.model.setHeaderData(SEX, Qt.Horizontal,"性别")
         self.model.setHeaderData(AGE, Qt.Horizontal,"年龄")
@@ -153,7 +156,9 @@ def setupDatabase():
     if create:
         query = QSqlQuery()
         query.exec_("""CREATE TABLE footdata (
-                id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,      
+                accountName VARCHAR(255) NOT NULL,
+                accountPassword VARCHAR(255) NOT NULL,
                 userName VARCHAR(255) NOT NULL,
                 footImg BLOB,
                 sex VARCHAR(255),

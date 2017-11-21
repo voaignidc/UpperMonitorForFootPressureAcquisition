@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 class SignInDlg(QDialog):
+    signInSignal = pyqtSignal() # 登录 信号
+    adminPermissionSignal = pyqtSignal() # 管理员权限 信号
     def __init__(self):
         super().__init__()
         self.setupUi()
@@ -27,13 +29,19 @@ class SignInDlg(QDialog):
     def getAccount(self):
         accountName = self.accountNameLineEdit.text()
         accountPassword = self.accountPasswordLineEdit.text()
-        print(accountName)
-        print(accountPassword)
+        return (accountName, accountPassword)
 
     # 登录
     def signIn(self):
-        self.getAccount()
         self.signInButton.setChecked(False)
+        name, password = self.getAccount()
+        if name == 'admin' and password == '1234':
+            self.signInSignal.emit()
+            self.adminPermissionSignal.emit()
+        elif name == 'admin':
+            QMessageBox.warning(self, "警告", "密码错误", QMessageBox.Ok)
+        else:
+            QMessageBox.warning(self, "警告", "用户名不存在", QMessageBox.Ok)
 
     def setupUi(self):
         self.titleLabel = QLabel("足部压力采集系统", self)
@@ -43,11 +51,13 @@ class SignInDlg(QDialog):
         self.accountNameLabel = QLabel("账号:  ", self)
         self.accountNameLineEdit = QLineEdit(self)
         self.accountNameLineEdit.setPlaceholderText("3-18个英文或数字")
+        self.accountNameLineEdit.setMaxLength(18)
 
         self.accountPasswordLabel = QLabel("密码:  ", self)
         self.accountPasswordLineEdit = QLineEdit(self)
         self.accountPasswordLineEdit.setEchoMode(QLineEdit.Password) # 用小黑点覆盖你所输入的字符
         self.accountPasswordLineEdit.setPlaceholderText("3-18个英文或数字")
+        self.accountNameLineEdit.setMaxLength(18)
 
         self.signInButton = QPushButton("登录", self)
         self.signUpButton = QPushButton("注册", self)

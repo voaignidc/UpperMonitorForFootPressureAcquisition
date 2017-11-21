@@ -13,24 +13,37 @@ import adminDataBase, serialPort, userInput, currentTime, signIn
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
         super().__init__()
+        self._adminPermission = False
         self.setupDataBase()
-        if self.setupSignInDlg():
-            self.setupUserInputDlg()
-            self.serialPortObject = serialPort.SerialPortClass()
-            self.setupUi()
-            self.setupLayout()
-            self.connectSignalSlot()
-            self.showUi()
+        self.setupSignInDlg()
 
+    # 初始化登录界面
     def setupSignInDlg(self):
         self.signInDlg = signIn.SignInDlg()
-        return False
+        self.signInDlg.signInSignal.connect(self.setupMainWindow) # 只有登录了,才能显示主窗口
+        self.signInDlg.adminPermissionSignal.connect(self.getAdminPermission)
 
+    #获得管理员权限
+    def getAdminPermission(self):
+        self._adminPermission = True
+        print('getAdminPermission')
 
+    # 初始化主窗口
+    def setupMainWindow(self):
+        self.signInDlg.close()
+        self.setupUserInputDlg()
+        self.serialPortObject = serialPort.SerialPortClass()
+        self.setupUi()
+        self.setupLayout()
+        self.connectSignalSlot()
+        self.showUi()
+
+    # 初始化主窗口Ui
     def setupUi(self):
         self.showButton()
         self.showImage()
 
+    # 显示主窗口
     def showUi(self):
         self.show()
         self.setWindowIcon(QIcon("../icons/foot32.png"))
