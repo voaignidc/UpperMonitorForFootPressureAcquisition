@@ -14,8 +14,16 @@ class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
     def __init__(self, parent=None):
         super(AdminDataBaseDlg, self).__init__(parent)
-
         self.model = QSqlTableModel(self)
+        self.view = QTableView()
+        self.setupSqlTableModel()
+        self.setupTableView()
+        self.showButton()
+        self.setupLayout()
+        self.connectSignalSlot()
+        self.showUi()
+
+    def setupSqlTableModel(self):
         self.model.setTable("footdata") # 数据库名称
         self.model.setSort(ID, Qt.AscendingOrder) # 默认用ID排序
         self.model.setHeaderData(ID, Qt.Horizontal, "ID")
@@ -34,7 +42,7 @@ class AdminDataBaseDlg(QDialog):
 
         self.model.select()
 
-        self.view = QTableView()
+    def setupTableView(self):
         self.view.setModel(self.model)
         self.view.setSelectionMode(QTableView.SingleSelection)
         self.view.setSelectionBehavior(QTableView.SelectRows)
@@ -42,46 +50,51 @@ class AdminDataBaseDlg(QDialog):
         self.view.setColumnHidden(FOOTIMG, True) # 隐藏FOOTIMG
         self.view.resizeColumnsToContents()
 
-        buttonBox = QDialogButtonBox()
-        addButton = buttonBox.addButton("添加", QDialogButtonBox.ActionRole)
-        deleteButton = buttonBox.addButton("删除", QDialogButtonBox.ActionRole)
-        sortButton = buttonBox.addButton("排序", QDialogButtonBox.ActionRole)
+    def showButton(self):
+        self.buttonBox = QDialogButtonBox()
+        self.addButton = self.buttonBox.addButton("添加", QDialogButtonBox.ActionRole)
+        self.deleteButton = self.buttonBox.addButton("删除", QDialogButtonBox.ActionRole)
+        self.sortButton = self.buttonBox.addButton("排序", QDialogButtonBox.ActionRole)
         if not MAC:
-            addButton.setFocusPolicy(Qt.NoFocus)
-            deleteButton.setFocusPolicy(Qt.NoFocus)
-            sortButton.setFocusPolicy(Qt.NoFocus)
+            self.addButton.setFocusPolicy(Qt.NoFocus)
+            self.deleteButton.setFocusPolicy(Qt.NoFocus)
+            self.sortButton.setFocusPolicy(Qt.NoFocus)
 
-        menu = QMenu(self)
-        sortByIDAction = menu.addAction("按ID排序")
-        sortByUserNameAction = menu.addAction("按用户名排序")
-        sortBySexAction = menu.addAction("按性别排序")
-        sortByAgeAction = menu.addAction("按年龄排序")
+        self.menu = QMenu(self)
+        self.sortByIDAction = self.menu.addAction("按ID排序")
+        self.sortByUserNameAction = self.menu.addAction("按用户名排序")
+        self.sortBySexAction = self.menu.addAction("按性别排序")
+        self.sortByAgeAction = self.menu.addAction("按年龄排序")
 
-        sortButton.setMenu(menu)
-        closeButton = buttonBox.addButton("保存并退出", QDialogButtonBox.ActionRole) # 关闭按钮
+        self.sortButton.setMenu(self.menu)
+        self.closeButton = self.buttonBox.addButton("保存并退出", QDialogButtonBox.ActionRole) # 关闭按钮
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.view)
-        layout.addWidget(buttonBox)
-        self.setLayout(layout)
+    def setupLayout(self):
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.view)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
 
-        '''以下为连接'''
-        addButton.clicked.connect(self.addRecord) #添加数据
-        deleteButton.clicked.connect(self.deleteRecord) #删除数据
-        
-        sortByIDAction.triggered.connect(lambda:self.sort(ID))
-        sortByUserNameAction.triggered.connect(lambda:self.sort(USERNAME))
-        sortBySexAction.triggered.connect(lambda:self.sort(SEX))
-        sortByAgeAction.triggered.connect(lambda:self.sort(AGE))
+    def connectSignalSlot(self):
+        '''连接'''
+        self.addButton.clicked.connect(self.addRecord) # 添加数据
+        self.deleteButton.clicked.connect(self.deleteRecord) # 删除数据
 
-        closeButton.clicked.connect(self.aboutToQuit)
+        self.sortByIDAction.triggered.connect(lambda:self.sort(ID))
+        self.sortByUserNameAction.triggered.connect(lambda:self.sort(USERNAME))
+        self.sortBySexAction.triggered.connect(lambda:self.sort(SEX))
+        self.sortByAgeAction.triggered.connect(lambda:self.sort(AGE))
+
+        self.closeButton.clicked.connect(self.aboutToQuit)
+
+    def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("数据库")
-        self.resize(500,300)
+        self.resize(850,700)
 
-    # 按下closeButton按钮会执行这个
     def aboutToQuit(self):
+        '''按下closeButton按钮会执行这个'''
         rowCount = self.model.rowCount()  # 返回当前有几行数据
         newRowSaved=self.model.insertRow(rowCount)  # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
         index = self.model.index(rowCount, USERNAME) # 返回QModelIndex对象,rowCount是行的序号(从0开始)
@@ -91,8 +104,8 @@ class AdminDataBaseDlg(QDialog):
         else:
             self.accept()  # 确定并退出对话框
 
-    # 如果用户直接点红叉关闭
     def closeEvent(self, QCloseEvent):
+        '''如果用户直接点红叉关闭'''
         rowCount = self.model.rowCount()  # 返回当前有几行数据
         newRowSaved=self.model.insertRow(rowCount)  # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
         index = self.model.index(rowCount, USERNAME) # 返回QModelIndex对象,rowCount是行的序号(从0开始)
@@ -100,8 +113,9 @@ class AdminDataBaseDlg(QDialog):
         if newRowSaved == False:
             QMessageBox.warning(self, "警告", "数据未保存!", QMessageBox.Ok)
 
-    #向数据库添加数据
+
     def addRecord(self):
+        '''向数据库添加数据'''
         rowCount = self.model.rowCount() # 返回当前有几行数据
         self.model.insertRow(rowCount) # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
         # 如果在这里调用rowCount = self.model.rowCount(),会发现rowCount+1了
@@ -116,8 +130,9 @@ class AdminDataBaseDlg(QDialog):
             # print('addRecord Fun in db.py')
             self.dataBaseRecordChangeSignal.emit()
 
-    #删除数据
+
     def deleteRecord(self):
+        '''删除数据'''
         index = self.view.currentIndex()
         if not index.isValid():
             return
@@ -135,13 +150,15 @@ class AdminDataBaseDlg(QDialog):
         self.model.select()
         self.dataBaseRecordChangeSignal.emit()
 
-    #按规则排序
+
     def sort(self, column):
+        '''按规则排序'''
         self.model.setSort(column, Qt.AscendingOrder)
         self.model.select()
 
-#初始化数据库
+
 def setupDatabase():
+    '''初始化数据库'''
     filename = os.path.join(os.path.dirname(__file__), "../dataBaseFile/footdata.db")
     create = not QFile.exists(filename)
 

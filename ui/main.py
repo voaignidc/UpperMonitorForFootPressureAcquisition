@@ -13,6 +13,7 @@ import adminDataBase, serialPort, userInput, currentTime, signIn
 class MainWindow(QMainWindow, QWidget):
     def __init__(self):
         super().__init__()
+        self.query = QSqlQuery()
         self._adminPermission = False # 管理员权限标志
         self.newAccount = False # 是新账户标志
         self.setupDataBase()
@@ -73,7 +74,6 @@ class MainWindow(QMainWindow, QWidget):
         self.selectUserLabel = QLabel("选择用户", self)
         self.selectUserBox = QComboBox()
 
-        self.query = QSqlQuery()
         self.query.exec_("""SELECT id,userName FROM footdata""")
         while self.query.next():
             id = self.query.value(0)
@@ -90,7 +90,6 @@ class MainWindow(QMainWindow, QWidget):
     # 刷新用户Box
     def refreshUserNameBox(self):
         self.selectUserBox.clear()  # 清空这个QComboBox
-        self.query = QSqlQuery()
         self.query.exec_("""SELECT id,userName FROM footdata""")
         while self.query.next():
             id = self.query.value(0)
@@ -123,6 +122,16 @@ class MainWindow(QMainWindow, QWidget):
     # 初始化 用户录入 对话框
     def setupUserInputDlg(self):
         self.userInputDlg = userInput.UserInputDlg()
+        self.userInputDlg.dataBaseRecordChangeSignal.connect(self.refreshDataBase)
+
+    # 用户录入 对话框 点完保存后, 再重新载入数据库
+    def refreshDataBase(self):
+        # self.adminDataBaseDlg.model.setTable("footdata")  # 数据库名称
+        # self.adminDataBaseDlg.model.select()
+        # self.adminDataBaseDlg.view.setModel(self.adminDataBaseDlg.model)
+        self.adminDataBaseDlg.setupSqlTableModel()
+        self.adminDataBaseDlg.setupTableView()
+        self.refreshUserNameBox()
 
     # 显示 用户录入 对话框
     def showUserInputDlg(self):
