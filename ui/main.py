@@ -65,7 +65,7 @@ class MainWindow(QMainWindow, QWidget):
         self.selectUserBox = QComboBox()
 
         self.query = QSqlQuery()
-        self.query.exec_("""select id,userName from footdata""")
+        self.query.exec_("""SELECT id,userName FROM footdata""")
         while self.query.next():
             id = self.query.value(0)
             name = self.query.value(1)
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow, QWidget):
     def refreshUserNameBox(self):
         self.selectUserBox.clear()  # 清空这个QComboBox
         self.query = QSqlQuery()
-        self.query.exec_("""select id,userName from footdata""")
+        self.query.exec_("""SELECT id,userName FROM footdata""")
         while self.query.next():
             id = self.query.value(0)
             name = self.query.value(1)
@@ -153,7 +153,7 @@ class MainWindow(QMainWindow, QWidget):
             return False
         currentUserId = self.getCurrentUserId()  # 获得用户id
 
-        self.query.prepare(""" select footImg from footdata where id=(?) """)
+        self.query.prepare(""" SELECT footImg FROM footdata WHERE id=(?) """)
         self.query.addBindValue(QVariant(currentUserId))
         self.query.exec_()
         while self.query.next():
@@ -195,11 +195,11 @@ class MainWindow(QMainWindow, QWidget):
                 return False
 
             currentUserId = self.getCurrentUserId()  # 获得用户id
-            self.query.prepare(""" update footdata set footImg=NULL where id=(?) """)  # 清空
+            self.query.prepare(""" UPDATE footdata SET footImg=NULL WHERE id=(?) """)  # 清空
             self.query.addBindValue(QVariant(currentUserId))
             self.query.exec_()
 
-            self.query.prepare(""" update footdata set footImg=(?) where id=(?) """)  # 写入
+            self.query.prepare(""" UPDATE footdata SET footImg=(?) WHERE id=(?) """)  # 写入
             self.query.addBindValue(QByteArray(byteDataToWrite))
             self.query.addBindValue(QVariant(currentUserId))
             self.query.exec_()

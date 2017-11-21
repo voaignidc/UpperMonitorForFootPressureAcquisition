@@ -11,6 +11,7 @@ class SignInDlg(QDialog):
     adminPermissionSignal = pyqtSignal() # 管理员权限 信号
     def __init__(self):
         super().__init__()
+        self.query = QSqlQuery()
         self.setupUi()
         self.setupLayout()
         self.connectSignalSlot()
@@ -25,23 +26,44 @@ class SignInDlg(QDialog):
     def connectSignalSlot(self):
         self.signInButton.clicked.connect(self.signIn)
 
-    # 获得账号名及密码
-    def getAccount(self):
-        accountName = self.accountNameLineEdit.text()
-        accountPassword = self.accountPasswordLineEdit.text()
-        return (accountName, accountPassword)
+    # 获得LineEdit里的账号名及密码
+    def getAccountFromLineEdit(self):
+        name = self.accountNameLineEdit.text()
+        password = self.accountPasswordLineEdit.text()
+        return (name, password)
+
+    # 与 数据库里的账号名及密码 进行对比
+    def compareAccount(self, nameFromLineEdit, passwordFromLineEdit):
+        ifGetPassword = False
+        ifPasswordCorrect = False
+        self.query.prepare(""" SELECT accountPassword FROM footdata WHERE accountName = (?)""")
+        self.query.addBindValue(QVariant(nameFromLineEdit))
+        self.query.exec_()
+
+        while self.query.next():
+            ifGetPassword = True
+            password = self.query.value(0)
+            print('密码:',password)
+            ifPasswordCorrect = (password == passwordFromLineEdit)
+
+        return (ifGetPassword and ifPasswordCorrect)
 
     # 登录
     def signIn(self):
         self.signInButton.setChecked(False)
-        name, password = self.getAccount()
-        if name == 'admin' and password == '1234':
-            self.signInSignal.emit()
-            self.adminPermissionSignal.emit()
-        elif name == 'admin':
-            QMessageBox.warning(self, "警告", "密码错误", QMessageBox.Ok)
+        nameFromLineEdit, passwordFromLineEdit = self.getAccountFromLineEdit()
+
+        if nameFromLineEdit == 'admin':
+            if passwordFromLineEdit == '1234':
+                self.signInSignal.emit()
+                self.adminPermissionSignal.emit()
+            else:
+                QMessageBox.warning(self, "警告", "密码错误!", QMessageBox.Ok)
         else:
-            QMessageBox.warning(self, "警告", "用户名不存在", QMessageBox.Ok)
+            if self.compareAccount(nameFromLineEdit, passwordFromLineEdit):
+                self.signInSignal.emit()
+            else:
+                QMessageBox.warning(self, "警告", "用户名不存在 或 密码错误!", QMessageBox.Ok)
 
     def setupUi(self):
         self.titleLabel = QLabel("足部压力采集系统", self)
@@ -52,12 +74,13 @@ class SignInDlg(QDialog):
         self.accountNameLineEdit = QLineEdit(self)
         self.accountNameLineEdit.setPlaceholderText("3-18个英文或数字")
         self.accountNameLineEdit.setMaxLength(18)
+        self.accountNameLineEdit.setFixedWidth(220)
 
         self.accountPasswordLabel = QLabel("密码:  ", self)
         self.accountPasswordLineEdit = QLineEdit(self)
         self.accountPasswordLineEdit.setEchoMode(QLineEdit.Password) # 用小黑点覆盖你所输入的字符
-        self.accountPasswordLineEdit.setPlaceholderText("3-18个英文或数字")
-        self.accountNameLineEdit.setMaxLength(18)
+        self.accountPasswordLineEdit.setPlaceholderText("3-12个英文或数字")
+        self.accountPasswordLineEdit.setMaxLength(12)
 
         self.signInButton = QPushButton("登录", self)
         self.signUpButton = QPushButton("注册", self)
