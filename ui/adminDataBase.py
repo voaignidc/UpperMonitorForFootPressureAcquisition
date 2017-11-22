@@ -139,11 +139,8 @@ class AdminDataBaseDlg(QDialog):
         record = self.model.record(index.row())
         userName = record.value(USERNAME)
         sex = record.value(SEX)
-        if (QMessageBox.question(self, "数据库",
-                ("删除此行数据({0}-{1})?"
-                .format(userName,sex)),
-                QMessageBox.Yes|QMessageBox.No) ==
-                QMessageBox.No):
+        if (QMessageBox.question(self, "数据库",("删除此行数据({0}-{1})?".format(userName,sex)),
+                                 QMessageBox.Yes|QMessageBox.No) ==QMessageBox.No):
             return
         self.model.removeRow(index.row())
         self.model.submitAll()

@@ -11,66 +11,110 @@ QQNUMBER, COLLECTTIME, COLLECTORNAME = range(13)
 
 class UserInputDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal()  # 改变数据库行的信号
-    def __init__(self):
+    def __init__(self, nowAccountName, ifNewAccount):
         super().__init__()
         self.query = QSqlQuery()
+        self.nowAccountName = nowAccountName # 现在登录的账户名
+        self.ifNewAccount = ifNewAccount # 新账户标志
         self.setupUi()
         self.setupLayout()
         self.connectSignalSlot()
         self.showUi()
+        if (self.nowAccountName != '') and (self.nowAccountName != 'admin'):
+            self.showAllFromDataBase()
 
     def connectSignalSlot(self):
         self.saveToDataBaseButton.clicked.connect(self.addRecord)
+        self.clearButton.clicked.connect(self.showAllFromDataBase)
 
-    # 检查账户名,账户密码,姓名是否合法
     def ifAccountNameAndPasswordValid(self):
+        '''检查账户名,账户密码,姓名是否合法'''
         valid = len(self.accountNameLineEdit.text()) >= 3 and len(self.accountPasswordLineEdit.text()) >= 3 \
                 and len(self.userNameLineEdit.text()) > 0
         return valid
 
-    # 检查账户名是否与已有账户名重复
-    def ifAccountNameRepeat(self):
+    def ifAccountNameRepeat(self, name):
+        '''检查账户名是否与已有账户名重复'''
         isRepeated = False # 返回真,则重复
-        nameFromLineEdit = self.accountNameLineEdit.text()
-        if nameFromLineEdit == 'admin':
+        if name == 'admin':
             isRepeated = True
         self.query.prepare(""" SELECT accountName FROM footdata WHERE accountName = (?)""")
-        self.query.addBindValue(QVariant(nameFromLineEdit))
+        self.query.addBindValue(QVariant(name))
         self.query.exec_()
-
         if self.query.next():
             isRepeated = True
         return isRepeated
 
-    # 向数据库加数据
     def addRecord(self):
+        '''向数据库加数据'''
         self.saveToDataBaseButton.setChecked(False)
         if not self.ifAccountNameAndPasswordValid():
             QMessageBox.warning(self, "警告", "账户名,账户密码,姓名是必填项!", QMessageBox.Ok)
         all = self.getAllFromLineEdit()
-        if not self.ifAccountNameRepeat(): # 新建
-            self.query.prepare(""" INSERT INTO footdata (accountName, accountPassword, userName, sex, age, 
-                    height, weight, phoneNumber, qqNumber, collectTime, collectorName) VALUES (?,?,?,?,?,?,?,?,?,?,?) """)
+
+        if not self.ifAccountNameRepeat(self.accountNameLineEdit.text()): # 新建账号
+            self.query.prepare(""" INSERT INTO footdata (accountName, accountPassword, userName, sex, age, height, weight, 
+                    phoneNumber, qqNumber, collectTime, collectorName) VALUES (?,?,?,?,?,?,?,?,?,?,?) """)
             for i in range(11):
                 self.query.addBindValue(QVariant(all[i]))
             self.query.exec_()
             self.dataBaseRecordChangeSignal.emit()
             QMessageBox.information(self, "成功", "用户信息录入成功!", QMessageBox.Ok)
+            self.ifNewAccount = False
+            self.nowAccountName = all[0]
             self.close()
+        else: # 已有账号
+            if self.ifNewAccount:
+                QMessageBox.warning(self, "警告", "此账号已存在,请换一个账号名!", QMessageBox.Ok)
+                return
+            if (QMessageBox.question(self, "用户信息录入", "确认覆盖?", QMessageBox.Yes | QMessageBox.No) == QMessageBox.No):
+                return
+            self.query.prepare(""" UPDATE footdata SET accountPassword=(?), userName=(?), sex=(?), age=(?), height=(?), weight=(?),
+                      phoneNumber=(?), qqNumber=(?), collectTime=(?), collectorName=(?) WHERE accountName=(?)""")
+            for i in range(10):
+                self.query.addBindValue(QVariant(all[i+1]))
+            self.query.addBindValue(QVariant(all[0]))
+            self.query.exec_()
+            QMessageBox.information(self, "成功", "用户信息覆盖成功!", QMessageBox.Ok)
+            self.close()
+
 
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowIcon(QIcon("../icons/foot32.png"))
         self.setWindowTitle("用户信息录入")
 
-
-
     def getAllFromLineEdit(self):
+        '''获得LineEdit里的全部信息'''
         return self.accountNameLineEdit.text(), self.accountPasswordLineEdit.text(), self.userNameLineEdit.text(),\
                self.sexBox.currentText(), self.ageLineEdit.text(), self.heightLineEdit.text(), self.weightLineEdit.text(),\
                self.phoneNumberLineEdit.text(), self.qqNumberLineEdit.text(), self.collectTimeLineEdit.text(), \
                self.collectorNameLineEdit.text()
 
+    def showAllFromDataBase(self):
+        '''获得数据库里的信息,放到LineEdit里'''
+        self.query.prepare(""" SELECT accountName, accountPassword, userName, sex, age, height, weight, 
+                phoneNumber, qqNumber, collectTime, collectorName FROM footdata WHERE accountName=(?) """)
+        self.query.addBindValue(self.nowAccountName)
+        self.query.exec_()
+        while self.query.next():
+            info = []
+            for i in range(11):
+                info.append(self.query.value(i))
+            self.accountNameLineEdit.setText(info[0])
+            self.accountPasswordLineEdit.setText(info[1])
+            self.userNameLineEdit.setText(info[2])
+            if info[3] == '男':
+                self.sexBox.setCurrentIndex(0)
+            else:
+                self.sexBox.setCurrentIndex(1)
+            self.ageLineEdit.setText(info[4])
+            self.heightLineEdit.setText(info[5])
+            self.weightLineEdit.setText(info[6])
+            self.phoneNumberLineEdit.setText(info[7])
+            self.qqNumberLineEdit.setText(info[8])
+            self.collectTimeLineEdit.setText(info[9])
+            self.collectorNameLineEdit.setText(info[10])
 
     def setupUi(self):
         self.accountInfoLabel = QLabel("账户信息  ",self)
@@ -158,12 +202,3 @@ class UserInputDlg(QDialog):
 
         self.gridLayout.addWidget(self.saveToDataBaseButton, *(6,2))
         self.gridLayout.addWidget(self.clearButton, *(6,4))
-
-
-# app = QApplication(sys.argv)
-# app.setQuitOnLastWindowClosed(True)
-#
-# window = UserInputDlg()
-# window.show()
-#
-# sys.exit(app.exec_())

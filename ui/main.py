@@ -15,28 +15,35 @@ class MainWindow(QMainWindow, QWidget):
         super().__init__()
         self.query = QSqlQuery()
         self._adminPermission = False # 管理员权限标志
-        self.newAccount = False # 是新账户标志
+        self.ifNewAccount = False # 新账户标志
+        self.nowAccountName = '' # 当前账户名
         self.setupDataBase()
         self.setupSignInDlg()
 
-    # 初始化登录界面
     def setupSignInDlg(self):
+        '''初始化登录界面'''
         self.signInDlg = signIn.SignInDlg()
-        self.signInDlg.signInSignal.connect(self.setupMainWindow) # 只有登录了,才能显示主窗口
+        self.signInDlg.closeSignInDlgSignal.connect(self.setupMainWindow) # 只有登录了,才能显示主窗口
         self.signInDlg.adminPermissionSignal.connect(self.getAdminPermission)
         self.signInDlg.newUserSignUpSignal.connect(self.signUpAsNewUser)
+        self.signInDlg.nowAccountNameSignal[str].connect(self.getNowAccountName)
 
-    # 新用户注册
+    def getNowAccountName(self, name):
+        '''获得新用户的名字'''
+        self.nowAccountName = name
+        print('nowAccountName =',name)
+
     def signUpAsNewUser(self):
-        self.newAccount = True
+        '''新用户注册'''
+        self.ifNewAccount = True
 
-    # 获得管理员权限
     def getAdminPermission(self):
+        '''获得管理员权限'''
         self._adminPermission = True
         print('getAdminPermission')
 
-    # 初始化主窗口
     def setupMainWindow(self):
+        '''初始化主窗口'''
         self.signInDlg.close()
         self.setupUserInputDlg()
         self.serialPortObject = serialPort.SerialPortClass()
@@ -44,7 +51,7 @@ class MainWindow(QMainWindow, QWidget):
         self.setupLayout()
         self.connectSignalSlot()
         self.showUi()
-        if self.newAccount:
+        if self.ifNewAccount:
             self.userInputDlg.show()
             self.userInputDlg.collectTimeLineEdit.setText(currentTime.getCurrentTime())
 
@@ -121,14 +128,11 @@ class MainWindow(QMainWindow, QWidget):
 
     # 初始化 用户录入 对话框
     def setupUserInputDlg(self):
-        self.userInputDlg = userInput.UserInputDlg()
+        self.userInputDlg = userInput.UserInputDlg(self.nowAccountName, self.ifNewAccount)
         self.userInputDlg.dataBaseRecordChangeSignal.connect(self.refreshDataBase)
 
     # 用户录入 对话框 点完保存后, 再重新载入数据库
     def refreshDataBase(self):
-        # self.adminDataBaseDlg.model.setTable("footdata")  # 数据库名称
-        # self.adminDataBaseDlg.model.select()
-        # self.adminDataBaseDlg.view.setModel(self.adminDataBaseDlg.model)
         self.adminDataBaseDlg.setupSqlTableModel()
         self.adminDataBaseDlg.setupTableView()
         self.refreshUserNameBox()

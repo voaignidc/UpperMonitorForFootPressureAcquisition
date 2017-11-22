@@ -7,9 +7,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 class SignInDlg(QDialog):
-    signInSignal = pyqtSignal() # 登录 信号
+    closeSignInDlgSignal = pyqtSignal() # 关闭登录窗口 信号
     adminPermissionSignal = pyqtSignal() # 管理员权限 信号
     newUserSignUpSignal = pyqtSignal() # 新用户注册
+    nowAccountNameSignal = pyqtSignal([str]) # 登录时的账号名
     def __init__(self):
         super().__init__()
         self.query = QSqlQuery()
@@ -44,7 +45,7 @@ class SignInDlg(QDialog):
 
         while self.query.next():
             password = self.query.value(0)
-            print('密码:',password)
+            print('password =',password)
             ifGetPassword = True
             ifPasswordCorrect = (password == passwordFromLineEdit)
 
@@ -57,13 +58,17 @@ class SignInDlg(QDialog):
 
         if nameFromLineEdit == 'admin':
             if passwordFromLineEdit == '1234':
-                self.signInSignal.emit()
+                self.nowAccountNameSignal[str].emit('admin')
+                self.closeSignInDlgSignal.emit()
                 self.adminPermissionSignal.emit()
             else:
                 QMessageBox.warning(self, "警告", "密码错误!", QMessageBox.Ok)
+
         else:
             if self.compareAccount(nameFromLineEdit, passwordFromLineEdit):
-                self.signInSignal.emit()
+
+                self.nowAccountNameSignal[str].emit(nameFromLineEdit)
+                self.closeSignInDlgSignal.emit()
             else:
                 QMessageBox.warning(self, "警告", "用户名不存在 或 密码错误!", QMessageBox.Ok)
 
@@ -71,7 +76,7 @@ class SignInDlg(QDialog):
     def signUp(self):
         self.signUpButton.setChecked(False)
         self.newUserSignUpSignal.emit()
-        self.signInSignal.emit()
+        self.closeSignInDlgSignal.emit()
 
     def setupUi(self):
         self.titleLabel = QLabel("足部压力采集系统", self)
