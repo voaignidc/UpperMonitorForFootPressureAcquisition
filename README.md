@@ -12,7 +12,7 @@
 * PyQt5
 * Pillow
 * pyserial
-* nmupy
+* numpy
 
 ## How to run
 * ui/main.py
@@ -26,7 +26,7 @@
 * 通过串口, 可以完成对压力传感器信息的采集与图形化显示
 * 附带sqlite数据库, 可以记录各个用户的信息
 
-# 支持的系统
+## 支持的系统
 * Windows 10 x64
 
 
@@ -35,7 +35,7 @@
 * PyQt5
 * Pillow
 * pyserial
-* nmupy
+* numpy
 
 ## 运行方法
 * ui/main.py
