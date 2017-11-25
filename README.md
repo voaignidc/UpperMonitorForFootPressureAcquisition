@@ -18,7 +18,7 @@
 * ui/main.py
 
 ## Screenshot
-![Screenshot](https://github.com/voaignidc/UpperMonitorForFootPressureAcquisition/screenshot.png)
+![Screenshot](https://github.com/voaignidc/UpperMonitorForFootPressureAcquisition/master/screenshot.png)
 
 # 足部压力采集上位机
 ## 简介
