@@ -50,6 +50,7 @@ class UserInputDlg(QDialog):
         self.saveToDataBaseButton.setChecked(False)
         if not self.ifAccountNameAndPasswordValid():
             QMessageBox.warning(self, "警告", "账户名,账户密码,姓名是必填项!", QMessageBox.Ok)
+            return
         all = self.getAllFromLineEdit()
 
         if not self.ifAccountNameRepeat(self.accountNameLineEdit.text()): # 新建账号
@@ -81,7 +82,7 @@ class UserInputDlg(QDialog):
 
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
-        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.setWindowIcon(QIcon("./icons/foot32.png"))
         self.setWindowTitle("用户信息录入")
 
     def getAllFromLineEdit(self):

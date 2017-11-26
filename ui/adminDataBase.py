@@ -89,7 +89,7 @@ class AdminDataBaseDlg(QDialog):
 
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
-        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.setWindowIcon(QIcon("./icons/foot32.png"))
         self.setWindowTitle("数据库")
         self.resize(850,700)
 

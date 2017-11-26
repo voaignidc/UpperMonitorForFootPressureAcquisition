@@ -7,7 +7,12 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 
-import adminDataBase, serialPort, userInput, currentTime, signIn
+'''主函数'''
+app = QApplication(sys.argv)
+app.setApplicationName("足部压力采集系统")
+app.setQuitOnLastWindowClosed(True)
+
+from ui import *
 
 # 主窗口
 class MainWindow(QMainWindow, QWidget):
@@ -63,7 +68,7 @@ class MainWindow(QMainWindow, QWidget):
     # 显示主窗口
     def showUi(self):
         self.show()
-        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.setWindowIcon(QIcon("./icons/foot32.png"))
 
     # 连接信号与槽
     def connectSignalSlot(self):
@@ -148,7 +153,7 @@ class MainWindow(QMainWindow, QWidget):
         # 左侧的刻度图
         self.scaleImageLabel = QLabel(self)
         self.scaleImage = QImage()
-        if self.scaleImage.load("../icons/arr.png"):
+        if self.scaleImage.load("./icons/arr.png"):
             self.scaleImageLabel.setPixmap(QPixmap.fromImage(self.scaleImage))
 
         # 足底压力图
@@ -157,14 +162,14 @@ class MainWindow(QMainWindow, QWidget):
         # self.footImageLabel.setScaledContents(True)
         # self.setCentralWidget(self.footImageLabel)
         self.footImage = QImage()
-        if self.footImage.load("../footPrints/blank.png"):
+        if self.footImage.load("./footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
             self.resize(self.footImage.width(), self.footImage.height())
         self.refreshFootImageAfterChangeUserBox(0)
 
     # 刷新脚印压力图 从串口保存成png之后
     def refreshFootImageAfterSavingPNG(self):
-        if self.footImage.load("../footPrints/tempBig.png"):
+        if self.footImage.load("./footPrints/tempBig.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
     # 刷新脚印压力图 (人为鼠标点击改变,而不是程序改变)改变用户Box之后
@@ -182,14 +187,14 @@ class MainWindow(QMainWindow, QWidget):
             byteDataReaded = self.query.value(0)
             try:  # 此用户数据库中有压力图
                 imgSmall = Image.frombytes('RGB', (32, 44), byteDataReaded)
-                imgSmall.save('../footPrints/tempSmall.png')
+                imgSmall.save('./footPrints/tempSmall.png')
                 imgBig = imgSmall.resize((320, 440))
-                imgBig.save('../footPrints/tempBig.png')
-                if self.footImage.load("../footPrints/tempBig.png"):
+                imgBig.save('./footPrints/tempBig.png')
+                if self.footImage.load("./footPrints/tempBig.png"):
                     self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
                     return True
             except:  # 此用户数据库中没有压力图(还未采集)
-                if self.footImage.load("../footPrints/blank.png"):
+                if self.footImage.load("./footPrints/blank.png"):
                     self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
                 return False
 
@@ -197,18 +202,18 @@ class MainWindow(QMainWindow, QWidget):
     def clearFootImage(self):
         self.clearFootImageButton.setChecked(False)
         try:
-            os.remove("../footPrints/tempBig.png")
-            os.remove("../footPrints/tempSmall.png")
+            os.remove("./footPrints/tempBig.png")
+            os.remove("./footPrints/tempSmall.png")
         except:
             pass
-        if self.footImage.load("../footPrints/blank.png"):
+        if self.footImage.load("./footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
     # 保存脚印压力图到数据库
     def saveFootImageToDataBase(self):
         self.saveFootImageButton.setChecked(False)
         try:
-            imgRead = Image.open("../footPrints/tempSmall.png")
+            imgRead = Image.open("./footPrints/tempSmall.png")
             byteDataToWrite = imgRead.tobytes()
 
             currentUserName = self.getCurrentUserName()  # 获得用户名+id
@@ -257,11 +262,6 @@ class MainWindow(QMainWindow, QWidget):
         self.setCentralWidget(widget)
 
 
-'''以下主函数'''
-app = QApplication(sys.argv)
-app.setApplicationName("足部压力采集系统")
-app.setQuitOnLastWindowClosed(True)
-
+'''主函数'''
 window = MainWindow()
-
 sys.exit(app.exec_())

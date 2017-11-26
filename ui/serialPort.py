@@ -4,7 +4,7 @@ import serial
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
-import convert
+from ui import convert
 
 # 串口类
 class SerialPortClass(QWidget):

@@ -15,7 +15,7 @@
 * numpy
 
 ## How to run
-* ui/main.py
+* main.py
 
 ## Screenshot
 ![Screenshot](https://github.com/voaignidc/UpperMonitorForFootPressureAcquisition/blob/master/screenshot.png)
@@ -38,4 +38,4 @@
 * numpy
 
 ## 运行方法
-* ui/main.py
+* main.py

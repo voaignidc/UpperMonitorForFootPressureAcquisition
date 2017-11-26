@@ -31,7 +31,7 @@ class ConvertProcessDlg(QDialog):
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint)
         self.setWindowTitle("读取数据")
-        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.setWindowIcon(QIcon("./icons/foot32.png"))
         self.resize(400, 100)
         self.show()
 
@@ -113,9 +113,9 @@ class ConvertProcessThread(QThread):
                 break
 
         imgSmall = Image.fromarray(bgrPix)
-        imgSmall.save('../footPrints/tempSmall.png')
+        imgSmall.save('./footPrints/tempSmall.png')
         imgBig = imgSmall.resize((320, 440))
-        imgBig.save('../footPrints/tempBig.png')
+        imgBig.save('./footPrints/tempBig.png')
 
     # 0-255 转 (0-255, 0-255, 0-255)
     def grayToBGR(self, gray):

@@ -21,7 +21,7 @@ class SignInDlg(QDialog):
 
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint) # 关闭问号
-        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.setWindowIcon(QIcon("./icons/foot32.png"))
         self.setWindowTitle("登录")
         self.show()
 
