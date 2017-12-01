@@ -6,6 +6,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
+from ui import currentTime
+
 ID, ACCOUNTNAME, ACCOUNTPASSWORD, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, \
 QQNUMBER, COLLECTTIME, COLLECTORNAME = range(13)
 
@@ -25,7 +27,7 @@ class UserInputDlg(QDialog):
 
     def connectSignalSlot(self):
         self.saveToDataBaseButton.clicked.connect(self.addRecord)
-        self.clearButton.clicked.connect(self.showAllFromDataBase)
+        self.clearButton.clicked.connect(self.clearAllInLineEdit)
 
     def ifAccountNameAndPasswordValid(self):
         '''检查账户名,账户密码,姓名是否合法'''
@@ -91,6 +93,20 @@ class UserInputDlg(QDialog):
                self.sexBox.currentText(), self.ageLineEdit.text(), self.heightLineEdit.text(), self.weightLineEdit.text(),\
                self.phoneNumberLineEdit.text(), self.qqNumberLineEdit.text(), self.collectTimeLineEdit.text(), \
                self.collectorNameLineEdit.text()
+
+    def clearAllInLineEdit(self):
+        '''清空LineEdit里的全部信息'''
+        self.accountNameLineEdit.clear()
+        self.accountPasswordLineEdit.clear()
+        self.userNameLineEdit.clear()
+        self.sexBox.setCurrentIndex(0)
+        self.ageLineEdit.clear()
+        self.heightLineEdit.clear()
+        self.weightLineEdit.clear()
+        self.phoneNumberLineEdit.clear()
+        self.qqNumberLineEdit.clear()
+        self.collectTimeLineEdit.setText(currentTime.getCurrentTime())
+        self.collectorNameLineEdit.clear()
 
     def showAllFromDataBase(self):
         '''获得数据库里的信息,放到LineEdit里'''

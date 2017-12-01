@@ -8,11 +8,20 @@ from PyQt5.QtGui import *
 from PyQt5.QtSql import *
 
 '''主函数'''
+
 app = QApplication(sys.argv)
 app.setApplicationName("足部压力采集系统")
 app.setQuitOnLastWindowClosed(True)
 
 from ui import *
+
+if getattr(sys, 'frozen', False):
+    rootPath = os.path.dirname(sys.executable)
+elif __file__:
+    rootPath = os.path.dirname(__file__)  
+fileName = rootPath+"/dataBaseFile/footdata.db"
+print(fileName)
+adminDataBase.setupDatabase(fileName)
 
 # 主窗口
 class MainWindow(QMainWindow, QWidget):
@@ -59,9 +68,9 @@ class MainWindow(QMainWindow, QWidget):
         if self.ifNewAccount:
             self.userInputDlg.show()
             self.userInputDlg.collectTimeLineEdit.setText(currentTime.getCurrentTime())
-
-    # 初始化主窗口Ui
+   
     def setupUi(self):
+        '''初始化主窗口Ui'''
         self.showButton()
         self.showImage()
 
@@ -70,8 +79,9 @@ class MainWindow(QMainWindow, QWidget):
         self.show()
         self.setWindowIcon(QIcon("./icons/foot32.png"))
 
-    # 连接信号与槽
+    
     def connectSignalSlot(self):
+        '''连接信号与槽'''
         self.showUserInputDlgButton.clicked.connect(self.showUserInputDlg)  # 连 显示用户录入对话框
         self.showAdminDataBaseDlgButton.clicked.connect(self.showAdminDataBaseDlg)
         self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG)  # '保存完毕'信号 连 刷新图像

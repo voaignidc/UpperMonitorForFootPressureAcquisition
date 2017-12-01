@@ -154,14 +154,11 @@ class AdminDataBaseDlg(QDialog):
         self.model.select()
 
 
-def setupDatabase():
+def setupDatabase(fileName):
     '''初始化数据库'''
-    filename = os.path.join(os.path.dirname(__file__), "../dataBaseFile/footdata.db")
-    create = not QFile.exists(filename)
-
-    # 连接数据库
-    db = QSqlDatabase.addDatabase("QSQLITE")
-    db.setDatabaseName(filename)
+    create = not QFile.exists(fileName)
+    db = QSqlDatabase.addDatabase("QSQLITE")# 连接数据库
+    db.setDatabaseName(fileName)
     if not db.open():
         QMessageBox.warning(None, "数据库",
             "Database Error: {0}".format(db.lastError().text()))
@@ -184,6 +181,3 @@ def setupDatabase():
                 collectTime VARCHAR(255),
                 collectorName VARCHAR(255)
                 )""")
-    
-'''以下主函数'''
-setupDatabase()

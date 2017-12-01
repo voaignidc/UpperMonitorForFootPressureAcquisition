@@ -94,6 +94,7 @@ class SignInDlg(QDialog):
         self.accountPasswordLineEdit.setEchoMode(QLineEdit.Password) # 用小黑点覆盖你所输入的字符
         # self.accountPasswordLineEdit.setPlaceholderText("3-12个英文或数字")
         self.accountPasswordLineEdit.setMaxLength(12)
+        self.accountPasswordLineEdit.setFixedWidth(220)
 
         self.signInButton = QPushButton("登录", self)
         self.signUpButton = QPushButton("注册", self)
