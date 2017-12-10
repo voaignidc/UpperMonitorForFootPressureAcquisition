@@ -9,8 +9,8 @@ from PyQt5.QtWidgets import *
 # 图像是 44行 32列
 # 转成 440行 320列
 
-# 读取数据的对话框
 class ConvertProcessDlg(QDialog):
+    '''读取数据的对话框'''
     def __init__(self, serial):
         super().__init__()
         self.serial = serial
@@ -64,8 +64,9 @@ class ConvertProcessDlg(QDialog):
         self.setLayout(mainLayout)
 
 
-# 读取数据的新线程
+
 class ConvertProcessThread(QThread):
+    '''读取数据的新线程'''
     finishConvertSingal =  pyqtSignal() # 数据接收完毕信号
     forceQuitSingal =  pyqtSignal() # 强制退出 数据接收 的信号
     uselessDataIndexSingal = pyqtSignal(int)
@@ -98,7 +99,7 @@ class ConvertProcessThread(QThread):
 
         # 保存第一个
         voltage = float(text.split(' ')[1].split('\n')[0])
-        bgrPix[0,0,:] = self.voltageToBGR(voltage)
+        bgrPix[0,0,:] = self.voltageToBGR(voltage, 4096)
 
         # 继续接受
         while True:
@@ -107,7 +108,7 @@ class ConvertProcessThread(QThread):
             index = int(text.split(' ')[0])
             self.usefulDataIndexSingal[int].emit(index // 14.1)
             voltage = float(text.split(' ')[1].split('\n')[0])
-            bgrPix[int(index/32),int(index%32),:] = self.voltageToBGR(voltage)
+            bgrPix[int(index/32),int(index%32),:] = self.voltageToBGR(voltage, 4096)
             if index == 1407:
                 self.usefulDataIndexSingal[int].emit(100)
                 break
@@ -117,32 +118,36 @@ class ConvertProcessThread(QThread):
         imgBig = imgSmall.resize((320, 440))
         imgBig.save('./footPrints/tempBig.png')
 
-    # 0-255 转 (0-255, 0-255, 0-255)
-    def grayToBGR(self, gray):
-        if gray >= 0 and gray <= 85:
-            B = int(255 / 85 * gray)
-        elif gray >= 85 and gray <= 170:
-            B = int(510 - 510 / 170 * gray)
+    # 0-x 转 (0-x, 0-x, 0-x)
+    def grayToBGR(self, gray, scale):
+        if gray >= 0 and gray <= scale//4:
+            B = 255
+        elif gray >= scale//4 and gray <= scale//2:
+            B = int(510 - 255 / (scale//4) * gray)
         else:
             B = 0
-        if gray <= 85:
-            G = 0
-        elif gray >= 85 and gray <= 170:
-            G = int(-255 + 510 / 170 * gray)
-        elif gray >= 170 and gray <= 255:
-            G = int(765 - 765 / 255 * gray)
-        if gray <= 170:
-            R = 0
+            
+        if gray <= scale//4:
+            G = int(255 / (scale//4) * gray)
+        elif gray >= scale//4 and gray <= (scale//4)*3:
+            G = 255
         else:
-            R = int(-510 + 510 / 170 * gray)
+            G = int(1020 - 255 / (scale//4) * gray)
+            
+        if gray <= scale//2:
+            R = 0
+        elif gray >= scale//2 and gray <= (scale//4)*3:
+            R = int(-510 + 255 / (scale//4) * gray)
+        else:
+            R = 255
         return (B, G, R)
 
-    # 0-3.3 转 0-255
-    def voltageToGray(self, voltage):
-        return voltage * 255 / 3.3
+    # 0-3.3 转 0-x
+    def voltageToGray(self, voltage, scale):
+        return voltage * scale / 3.3
 
     # 电压转彩色
-    def voltageToBGR(self, voltage):
-        return (self.grayToBGR(self.voltageToGray(voltage)))
+    def voltageToBGR(self, voltage, scale):
+        return (self.grayToBGR(self.voltageToGray(voltage, scale), scale))
 
 
