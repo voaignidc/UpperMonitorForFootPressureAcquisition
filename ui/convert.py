@@ -75,19 +75,26 @@ class ConvertProcessThread(QThread):
         super().__init__()
         self.serial = serial
 
-    # strat后会执行这个函数
     def run(self):
-        self.saveImgFromSerial()
+        '''线程strat后会执行这个函数'''
+        self.saveDataFromSerial()
         self.finishConvertSingal.emit() # 发射'转换结束'信号
 
-    # 从串口读取数据,保存成png
-    def saveImgFromSerial(self):
-        bgrPix = np.zeros((44,32,3), np.uint8)# 44行32列，3通道
-        # 等待接受到开头
+    def saveDataFromSerial(self):
+        '''从串口读取数据并保存
+        保存电压向量到txt
+        保存压力图为彩色png
+        '''
+        voltageArr = [] # 存储电压值的向量
+        bgrPix = np.zeros((44,32,3), np.uint8) # 彩色图像的矩阵(44行32列，3通道)
+
+        # 等待接收到开头, 并确保接收到完整的第一行
+        self.serial.readline()
+        self.serial.readline()
         while True:
-            text=self.serial.readline().decode("utf-8")
+            text = self.serial.readline().decode("utf-8")
             print(text)
-            if len(text) >= 6:
+            if ' ' in text and text[0] != ' ':
                 try:
                     index = int(text.split(' ')[0])
                     self.uselessDataIndexSingal[int].emit(index//14.1)
@@ -97,29 +104,38 @@ class ConvertProcessThread(QThread):
                     self.uselessDataIndexSingal[int].emit(100)
                     break
 
-        # 保存第一个
+        # 保存第一个数据
         voltage = float(text.split(' ')[1].split('\n')[0])
+        voltageArr.append(voltage)
         bgrPix[0,0,:] = self.voltageToBGR(voltage, 4096)
 
-        # 继续接受
+        # 继续接收数据
         while True:
             text=self.serial.readline().decode("utf-8")
             print(text)
             index = int(text.split(' ')[0])
             self.usefulDataIndexSingal[int].emit(index // 14.1)
             voltage = float(text.split(' ')[1].split('\n')[0])
+            voltageArr.append(voltage)
             bgrPix[int(index/32),int(index%32),:] = self.voltageToBGR(voltage, 4096)
             if index == 1407:
                 self.usefulDataIndexSingal[int].emit(100)
                 break
 
+        # 保存电压向量到txt
+        with open('./footPrints/voltageArr.txt','w+') as f:
+            f.write(str(voltageArr).strip('[').strip(']'))
+            f.close()
+
+        # 保存压力图为彩色png
         imgSmall = Image.fromarray(bgrPix)
         imgSmall.save('./footPrints/tempSmall.png')
         imgBig = imgSmall.resize((320, 440))
         imgBig.save('./footPrints/tempBig.png')
 
-    # 0-x 转 (0-x, 0-x, 0-x)
+
     def grayToBGR(self, gray, scale):
+        '''0-x 转 (0-x, 0-x, 0-x)'''
         if gray >= 0 and gray <= scale//4:
             B = 255
         elif gray >= scale//4 and gray <= scale//2:
@@ -142,12 +158,18 @@ class ConvertProcessThread(QThread):
             R = 255
         return (B, G, R)
 
-    # 0-3.3 转 0-x
+
     def voltageToGray(self, voltage, scale):
+        '''0-3.3v 转 0-x'''
         return voltage * scale / 3.3
 
-    # 电压转彩色
+
     def voltageToBGR(self, voltage, scale):
+        '''电压转彩色
+        Args:
+            voltage:0-3.300的数
+            scale:可以是2的8-12次方
+        '''
         return (self.grayToBGR(self.voltageToGray(voltage, scale), scale))
 
 

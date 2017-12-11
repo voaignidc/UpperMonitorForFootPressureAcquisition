@@ -31,7 +31,7 @@ class MainWindow(QMainWindow, QWidget):
         self._adminPermission = False # 管理员权限标志
         self.ifNewAccount = False # 新账户标志
         self.nowAccountName = '' # 当前账户名
-        self.setupDataBase()
+        self.setupDataBaseUI()
         self.setupSignInDlg()
 
     def setupSignInDlg(self):
@@ -91,7 +91,7 @@ class MainWindow(QMainWindow, QWidget):
         self.selectUserBox.activated[int].connect(self.refreshFootImageAfterChangeUserBox)
 
     # 初始化数据库
-    def setupDataBase(self):
+    def setupDataBaseUI(self):
         self.adminDataBaseDlg = adminDataBase.AdminDataBaseDlg()
         self.selectUserLabel = QLabel("选择用户", self)
         self.selectUserBox = QComboBox()
@@ -219,24 +219,29 @@ class MainWindow(QMainWindow, QWidget):
         if self.footImage.load("./footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
-    # 保存脚印压力图到数据库
+
     def saveFootImageToDataBase(self):
+        '''保存脚印压力图到数据库
+        Return:
+            True: if 成功保存压力图的二进制数据
+            False: if 保存失败
+        '''
         self.saveFootImageButton.setChecked(False)
         try:
             imgRead = Image.open("./footPrints/tempSmall.png")
             byteDataToWrite = imgRead.tobytes()
 
             currentUserName = self.getCurrentUserName()  # 获得用户名+id
-            if (currentUserName == ''):
+            if currentUserName == '':
                 QMessageBox.warning(self, "警告", "没有用户!无法保存压力图数据!\n请先在数据库里建立用户!", QMessageBox.Ok)
                 return False
 
             currentUserId = self.getCurrentUserId()  # 获得用户id
-            self.query.prepare(""" UPDATE footdata SET footImg=NULL WHERE id=(?) """)  # 清空
+            self.query.prepare(""" UPDATE footdata SET footImg=NULL WHERE id=(?) """)  # 清空压力图的二进制数据
             self.query.addBindValue(QVariant(currentUserId))
             self.query.exec_()
 
-            self.query.prepare(""" UPDATE footdata SET footImg=(?) WHERE id=(?) """)  # 写入
+            self.query.prepare(""" UPDATE footdata SET footImg=(?) WHERE id=(?) """)  # 写入压力图的二进制数据
             self.query.addBindValue(QByteArray(byteDataToWrite))
             self.query.addBindValue(QVariant(currentUserId))
             self.query.exec_()

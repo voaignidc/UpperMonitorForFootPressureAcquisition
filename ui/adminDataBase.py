@@ -157,11 +157,11 @@ class AdminDataBaseDlg(QDialog):
 def setupDatabase(fileName):
     '''初始化数据库'''
     create = not QFile.exists(fileName)
-    db = QSqlDatabase.addDatabase("QSQLITE")# 连接数据库
+    db = QSqlDatabase.addDatabase("QSQLITE") # 连接数据库
     db.setDatabaseName(fileName)
+
     if not db.open():
-        QMessageBox.warning(None, "数据库",
-            "Database Error: {0}".format(db.lastError().text()))
+        QMessageBox.warning(None, "数据库", "Database Error: {0}".format(db.lastError().text()))
         sys.exit(1)
 
     if create:
