@@ -156,8 +156,8 @@ class AdminDataBaseDlg(QDialog):
         self.model.select()
 
 
-def setupDatabase(fileName):
-    '''初始化数据库'''
+def connectDataBaseFile(fileName):
+    '''连接数据库文件, 若不存在则创建一个'''
     create = not QFile.exists(fileName)
     db = QSqlDatabase.addDatabase("QSQLITE") # 连接数据库
     db.setDatabaseName(fileName)

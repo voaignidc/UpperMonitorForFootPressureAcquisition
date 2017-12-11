@@ -21,10 +21,10 @@ elif __file__:
     rootPath = os.path.dirname(__file__)  
 fileName = rootPath+"/dataBaseFile/footdata.db"
 print(fileName)
-adminDataBase.setupDatabase(fileName)
+adminDataBase.connectDataBaseFile(fileName)
 
-# 主窗口
 class MainWindow(QMainWindow, QWidget):
+    '''主窗口'''
     def __init__(self):
         super().__init__()
         self.query = QSqlQuery()
@@ -74,8 +74,8 @@ class MainWindow(QMainWindow, QWidget):
         self.showButton()
         self.showImage()
 
-    # 显示主窗口
     def showUi(self):
+        '''显示主窗口'''
         self.show()
         self.setWindowIcon(QIcon("./icons/foot32.png"))
 
@@ -84,14 +84,15 @@ class MainWindow(QMainWindow, QWidget):
         '''连接信号与槽'''
         self.showUserInputDlgButton.clicked.connect(self.showUserInputDlg)  # 连 显示用户录入对话框
         self.showAdminDataBaseDlgButton.clicked.connect(self.showAdminDataBaseDlg)
-        self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG)  # '保存完毕'信号 连 刷新图像
+        self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG)  # '保存完毕'信号
+        # 连 刷新图像
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
         self.saveFootImageButton.clicked.connect(self.saveFootDataToDataBase)
-        # activated是用户点击QComboBox后才产生的信号,程序改变QComboBox则不产生此信号
-        self.selectUserBox.activated[int].connect(self.refreshFootImageAfterChangeUserBox)
+        self.selectUserBox.activated[int].connect(self.refreshFootImageAfterChangeUserBox) # activated是用户点击
+        # QComboBox后才产生的信号,程序改变QComboBox则不产生此信号
 
-    # 初始化数据库
     def setupDataBaseUI(self):
+        '''初始化数据库'''
         self.adminDataBaseDlg = adminDataBase.AdminDataBaseDlg()
         self.selectUserLabel = QLabel("选择用户", self)
         self.selectUserBox = QComboBox()
@@ -177,25 +178,32 @@ class MainWindow(QMainWindow, QWidget):
             self.resize(self.footImage.width(), self.footImage.height())
         self.refreshFootImageAfterChangeUserBox(0)
 
-    # 刷新脚印压力图 从串口保存成png之后
     def refreshFootImageAfterSavingPNG(self):
+        '''从串口保存成png之后, 刷新UI上的脚印压力图'''
         if self.footImage.load("./footPrints/tempBig.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
-    # 刷新脚印压力图 (人为鼠标点击改变,而不是程序改变)改变用户Box之后
     def refreshFootImageAfterChangeUserBox(self, uselessVar):
+        """改变用户Box之后(人为鼠标点击改变,而不是程序改变), 刷新UI上的脚印压力图
+        Return:
+            True: if 成功刷新
+            False: if 刷新失败
+        """
         currentUserName = self.getCurrentUserName()  # 获得用户名+id
         if (currentUserName == ''):
             print('没有用户')
             return False
         currentUserId = self.getCurrentUserId()  # 获得用户id
+        return self.loadFootImgFromDataBase(currentUserId) and self.loadFootVoltageFromDataBase(currentUserId)
 
+    def loadFootImgFromDataBase(self, currentUserId):
+        """从数据库读取脚印压力图像的二进制数据"""
         self.query.prepare(""" SELECT footImg FROM footdata WHERE id=(?) """)
         self.query.addBindValue(QVariant(currentUserId))
         self.query.exec_()
         while self.query.next():
             byteDataReaded = self.query.value(0)
-            try:  # 此用户数据库中有压力图
+            try: # 此用户数据库中有压力图
                 imgSmall = Image.frombytes('RGB', (32, 44), byteDataReaded)
                 imgSmall.save('./footPrints/tempSmall.png')
                 imgBig = imgSmall.resize((320, 440))
@@ -203,27 +211,38 @@ class MainWindow(QMainWindow, QWidget):
                 if self.footImage.load("./footPrints/tempBig.png"):
                     self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
                     return True
-            except:  # 此用户数据库中没有压力图(还未采集)
+            except: # 此用户数据库中没有压力图(还未采集)
                 if self.footImage.load("./footPrints/blank.png"):
                     self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
                 return False
 
-    # 清空脚印压力图
+    def loadFootVoltageFromDataBase(self, currentUserId):
+        """从数据库读取脚印压力电压值的字符串
+        ToDo:
+        """
+        self.query.prepare(""" SELECT footVoltage FROM footdata WHERE id=(?) """)
+        self.query.addBindValue(QVariant(currentUserId))
+        self.query.exec_()
+        while self.query.next():
+            stringReaded = self.query.value(0)
+        print(stringReaded)
+
     def clearFootImage(self):
+        '''清空脚印压力图'''
         self.clearFootImageButton.setChecked(False)
         try:
             os.remove("./footPrints/tempBig.png")
             os.remove("./footPrints/tempSmall.png")
+            os.remove("./footPrints/voltageArr.txt")
         except:
             pass
         if self.footImage.load("./footPrints/blank.png"):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
-
     def saveFootDataToDataBase(self):
         '''保存脚印压力图像及电压向量到数据库
         Return:
-            True: if 成功保存压力图的二进制数据 及 电压字符串的二进制数据
+            True: if 成功保存压力图的二进制数据 及 电压值的字符串
             False: if 保存失败
         '''
         self.saveFootImageButton.setChecked(False)
@@ -262,18 +281,17 @@ class MainWindow(QMainWindow, QWidget):
 
     def saveFootVoltageToDataBase(self, currentUserId, byteDataToWrite):
         '''保存脚印电压字符串到数据库'''
-        self.query.prepare(""" UPDATE footdata SET footVoltage=NULL WHERE id=(?) """)  # 清空电压向量的二进制数据
+        self.query.prepare(""" UPDATE footdata SET footVoltage=NULL WHERE id=(?) """)  # 清空电压值的字符串
         self.query.addBindValue(QVariant(currentUserId))
         self.query.exec_()
 
-        self.query.prepare(""" UPDATE footdata SET footVoltage=(?) WHERE id=(?) """)  # 写入电压字符串的二进制数据
+        self.query.prepare(""" UPDATE footdata SET footVoltage=(?) WHERE id=(?) """)  # 写入电压值的字符串
         self.query.addBindValue(byteDataToWrite)
         self.query.addBindValue(QVariant(currentUserId))
         self.query.exec_()
 
-
-    # 布局
     def setupLayout(self):
+        '''布局'''
         leftSideLayout = QVBoxLayout()
         leftSideLayout.addStretch(1)
 
