@@ -86,7 +86,7 @@ class MainWindow(QMainWindow, QWidget):
         self.showAdminDataBaseDlgButton.clicked.connect(self.showAdminDataBaseDlg)
         self.serialPortObject.finishSavingPNGSingal.connect(self.refreshFootImageAfterSavingPNG)  # '保存完毕'信号 连 刷新图像
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
-        self.saveFootImageButton.clicked.connect(self.saveFootImageToDataBase)
+        self.saveFootImageButton.clicked.connect(self.saveFootDataToDataBase)
         # activated是用户点击QComboBox后才产生的信号,程序改变QComboBox则不产生此信号
         self.selectUserBox.activated[int].connect(self.refreshFootImageAfterChangeUserBox)
 
@@ -220,16 +220,19 @@ class MainWindow(QMainWindow, QWidget):
             self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
 
 
-    def saveFootImageToDataBase(self):
-        '''保存脚印压力图到数据库
+    def saveFootDataToDataBase(self):
+        '''保存脚印压力图像及电压向量到数据库
         Return:
-            True: if 成功保存压力图的二进制数据
+            True: if 成功保存压力图的二进制数据 及 电压字符串的二进制数据
             False: if 保存失败
         '''
         self.saveFootImageButton.setChecked(False)
         try:
             imgRead = Image.open("./footPrints/tempSmall.png")
-            byteDataToWrite = imgRead.tobytes()
+            imgByteDataToWrite = imgRead.tobytes()
+
+            with open("./footPrints/voltageArr.txt",'r+') as f:
+                voltageByteDataToWrite = f.readline()
 
             currentUserName = self.getCurrentUserName()  # 获得用户名+id
             if currentUserName == '':
@@ -237,20 +240,37 @@ class MainWindow(QMainWindow, QWidget):
                 return False
 
             currentUserId = self.getCurrentUserId()  # 获得用户id
-            self.query.prepare(""" UPDATE footdata SET footImg=NULL WHERE id=(?) """)  # 清空压力图的二进制数据
-            self.query.addBindValue(QVariant(currentUserId))
-            self.query.exec_()
-
-            self.query.prepare(""" UPDATE footdata SET footImg=(?) WHERE id=(?) """)  # 写入压力图的二进制数据
-            self.query.addBindValue(QByteArray(byteDataToWrite))
-            self.query.addBindValue(QVariant(currentUserId))
-            self.query.exec_()
+            self.saveFootImgToDataBase(currentUserId, imgByteDataToWrite) # 保存脚印压力图像到数据库
+            self.saveFootVoltageToDataBase(currentUserId, voltageByteDataToWrite) # 保存脚印压力图像到数据库
 
             QMessageBox.information(self, "成功", "成功保存压力图数据", QMessageBox.Ok)
             return True
         except:
             QMessageBox.warning(self, "警告", "没有可以用来保存的压力图数据!", QMessageBox.Ok)
             return False
+
+    def saveFootImgToDataBase(self, currentUserId, byteDataToWrite):
+        '''保存脚印压力图像到数据库'''
+        self.query.prepare(""" UPDATE footdata SET footImg=NULL WHERE id=(?) """)  # 清空压力图的二进制数据
+        self.query.addBindValue(QVariant(currentUserId))
+        self.query.exec_()
+
+        self.query.prepare(""" UPDATE footdata SET footImg=(?) WHERE id=(?) """)  # 写入压力图的二进制数据
+        self.query.addBindValue(QByteArray(byteDataToWrite))
+        self.query.addBindValue(QVariant(currentUserId))
+        self.query.exec_()
+
+    def saveFootVoltageToDataBase(self, currentUserId, byteDataToWrite):
+        '''保存脚印电压字符串到数据库'''
+        self.query.prepare(""" UPDATE footdata SET footVoltage=NULL WHERE id=(?) """)  # 清空电压向量的二进制数据
+        self.query.addBindValue(QVariant(currentUserId))
+        self.query.exec_()
+
+        self.query.prepare(""" UPDATE footdata SET footVoltage=(?) WHERE id=(?) """)  # 写入电压字符串的二进制数据
+        self.query.addBindValue(byteDataToWrite)
+        self.query.addBindValue(QVariant(currentUserId))
+        self.query.exec_()
+
 
     # 布局
     def setupLayout(self):

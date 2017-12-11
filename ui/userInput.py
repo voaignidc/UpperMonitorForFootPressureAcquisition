@@ -8,9 +8,6 @@ from PyQt5.QtSql import *
 
 from ui import currentTime
 
-ID, ACCOUNTNAME, ACCOUNTPASSWORD, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, \
-QQNUMBER, COLLECTTIME, COLLECTORNAME = range(13)
-
 class UserInputDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal()  # 改变数据库行的信号
     def __init__(self, nowAccountName, ifNewAccount):

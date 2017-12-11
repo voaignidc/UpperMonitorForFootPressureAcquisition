@@ -64,7 +64,6 @@ class ConvertProcessDlg(QDialog):
         self.setLayout(mainLayout)
 
 
-
 class ConvertProcessThread(QThread):
     '''读取数据的新线程'''
     finishConvertSingal =  pyqtSignal() # 数据接收完毕信号

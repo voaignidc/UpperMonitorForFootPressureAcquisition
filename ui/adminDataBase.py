@@ -7,8 +7,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtSql import *
 
 MAC = False
-ID, ACCOUNTNAME, ACCOUNTPASSWORD, USERNAME, FOOTIMG, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, \
-QQNUMBER, COLLECTTIME, COLLECTORNAME = range(13)
+ID, ACCOUNTNAME, ACCOUNTPASSWORD, USERNAME, FOOTIMG, FOOTVOLTAGE, SEX, AGE, HEIGHT, WEIGHT, PHONENUMBER, \
+QQNUMBER, COLLECTTIME, COLLECTORNAME = range(14)
 
 class AdminDataBaseDlg(QDialog):
     dataBaseRecordChangeSignal = pyqtSignal() # 改变数据库行的信号
@@ -30,7 +30,8 @@ class AdminDataBaseDlg(QDialog):
         self.model.setHeaderData(ACCOUNTNAME, Qt.Horizontal, "账户名")
         self.model.setHeaderData(ACCOUNTPASSWORD, Qt.Horizontal, "账户密码")
         self.model.setHeaderData(USERNAME, Qt.Horizontal,"姓名")
-        self.model.setHeaderData(FOOTIMG, Qt.Horizontal, "足部压力数据")
+        self.model.setHeaderData(FOOTIMG, Qt.Horizontal, "足部压力图像")
+        self.model.setHeaderData(FOOTVOLTAGE, Qt.Horizontal, "足部压力电压值")
         self.model.setHeaderData(SEX, Qt.Horizontal,"性别")
         self.model.setHeaderData(AGE, Qt.Horizontal,"年龄")
         self.model.setHeaderData(HEIGHT, Qt.Horizontal,"身高")
@@ -47,7 +48,8 @@ class AdminDataBaseDlg(QDialog):
         self.view.setSelectionMode(QTableView.SingleSelection)
         self.view.setSelectionBehavior(QTableView.SelectRows)
         self.view.setColumnHidden(ID, True) # 隐藏ID
-        self.view.setColumnHidden(FOOTIMG, True) # 隐藏FOOTIMG
+        self.view.setColumnHidden(FOOTIMG, True)
+        self.view.setColumnHidden(FOOTVOLTAGE, True)
         self.view.resizeColumnsToContents()
 
     def showButton(self):
@@ -96,7 +98,7 @@ class AdminDataBaseDlg(QDialog):
     def aboutToQuit(self):
         '''按下closeButton按钮会执行这个'''
         rowCount = self.model.rowCount()  # 返回当前有几行数据
-        newRowSaved=self.model.insertRow(rowCount)  # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
+        newRowSaved = self.model.insertRow(rowCount)  # 插入行,如果的确插入新行,返回Ture并插入新航;当正在新加行未编辑完时,返回False,不插入
         index = self.model.index(rowCount, USERNAME) # 返回QModelIndex对象,rowCount是行的序号(从0开始)
         self.model.removeRow(index.row())
         if newRowSaved == False:
@@ -172,6 +174,7 @@ def setupDatabase(fileName):
                 accountPassword VARCHAR(255) NOT NULL,
                 userName VARCHAR(255) NOT NULL,
                 footImg BLOB,
+                footVoltage TEXT(65535),
                 sex VARCHAR(255),
                 age VARCHAR(255),
                 height VARCHAR(255),
