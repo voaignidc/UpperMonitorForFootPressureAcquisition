@@ -194,10 +194,16 @@ class MainWindow(QMainWindow, QWidget):
             print('没有用户')
             return False
         currentUserId = self.getCurrentUserId()  # 获得用户id
-        return self.loadFootImgFromDataBase(currentUserId) and self.loadFootVoltageFromDataBase(currentUserId)
+        if self.loadFootImgFromDataBase(currentUserId):
+            return self.loadFootVoltageFromDataBase(currentUserId)
+        else:
+            return False
 
     def loadFootImgFromDataBase(self, currentUserId):
-        """从数据库读取脚印压力图像的二进制数据"""
+        """从数据库读取脚印压力图像的二进制数据,
+           转换成png
+           并保存到footPrints文件夹
+        """
         self.query.prepare(""" SELECT footImg FROM footdata WHERE id=(?) """)
         self.query.addBindValue(QVariant(currentUserId))
         self.query.exec_()
@@ -218,14 +224,17 @@ class MainWindow(QMainWindow, QWidget):
 
     def loadFootVoltageFromDataBase(self, currentUserId):
         """从数据库读取脚印压力电压值的字符串
-        ToDo:
+           转换成txt
+           并保存到footPrints文件夹
         """
         self.query.prepare(""" SELECT footVoltage FROM footdata WHERE id=(?) """)
         self.query.addBindValue(QVariant(currentUserId))
         self.query.exec_()
         while self.query.next():
             stringReaded = self.query.value(0)
-        print(stringReaded)
+        with open('./footPrints/voltageArr.txt', 'w+') as f:
+            f.write(stringReaded)
+            f.close()
 
     def clearFootImage(self):
         '''清空脚印压力图'''
