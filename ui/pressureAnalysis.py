@@ -8,15 +8,12 @@ from PyQt5.QtWidgets import *
 
 import numpy as np
 np.set_printoptions(threshold=np.nan)
-import matplotlib
+import matplotlib.pyplot as plt
 
 class PressureData():
-    """
-    计算压力,压强等
-    """
+    """计算压力,压强等"""
     def __init__(self):
-        voltageArrRead = self.readVoltageArrFromTxt()
-        self.voltageArr = np.array(voltageArrRead)
+        self.voltageArr = np.array(self.readVoltageArrFromTxt())
         self.forceArr = self.voltageArrToForceArr(self.voltageArr)
         self.pressureArr = self.forceArrToPressureArr(self.forceArr)
 
@@ -91,6 +88,18 @@ class PressureData():
         touchedArea = int(touchedPixNum*s)
         return touchedArea
 
+class PressureDiagram():
+    """压强分析图"""
+    def __init__(self, pressureArr):
+        super().__init__()
+        X = [0, 1, 2, 3, 4, 5]
+        Y = [222, 42, 455, 664, 454, 334]
+        fig = plt.figure()
+        plt.bar(X, Y, 0.4, color="blue")
+        plt.xlabel("pressure(kPa)")
+        plt.ylabel("times")
+        plt.title("pressure-times hist")
+        plt.show()
 
 class PressureAnalysisDlg(QDialog):
     """压力分析的对话框"""
@@ -99,13 +108,48 @@ class PressureAnalysisDlg(QDialog):
         self.setupUi()
         self.setupLayout()
         self.showUi()
-        self.getPressureData()
+        pressureData = PressureData()
+        pressureDiagram = PressureDiagram(pressureData.pressureArr)
+
+
 
     def setupUi(self):
-        self.analysisLabel = QLabel("压力分析", self)
+        self.totalForceLabel = QLabel("总压力(N)", self)
+        self.totalForceLineEdit = QLineEdit(self)
+        self.totalForceLineEdit.setEnabled(False)
+        self.averageForceLabel = QLabel("平均压力(N)", self)
+        self.averageForceLineEdit = QLineEdit(self)
+        self.totalPressureLabel = QLabel("总压强(kPa)", self)
+        self.totalPressureLineEdit = QLineEdit(self)
+        self.averagePressureLabel = QLabel("平均压强(kPa)", self)
+        self.averagePressureLineEdit = QLineEdit(self)
+        self.maxPressureLabel = QLabel("最大压强(kPa)", self)
+        self.maxPressureLineEdit = QLineEdit(self)
+        self.minPressureLabel = QLabel("最小压强(kPa)", self)
+        self.minPressureLineEdit = QLineEdit(self)
+        self.touchedAreaLabel = QLabel("接触面积(cm^2)", self)
+        self.touchedAreaLineEdit = QLineEdit(self)
 
     def setupLayout(self):
-        pass
+        self.gridLayout = QGridLayout()
+        self.gridLayout.setSpacing(10)
+
+        self.gridLayout.addWidget(self.totalForceLabel, *(0,0))
+        self.gridLayout.addWidget(self.totalForceLineEdit, *(0,1))
+        self.gridLayout.addWidget(self.averageForceLabel, *(1,0))
+        self.gridLayout.addWidget(self.averageForceLineEdit, *(1,1))
+        self.gridLayout.addWidget(self.totalPressureLabel, *(2,0))
+        self.gridLayout.addWidget(self.totalPressureLineEdit, *(2,1))
+        self.gridLayout.addWidget(self.averagePressureLabel, *(3,0))
+        self.gridLayout.addWidget(self.averagePressureLineEdit, *(3,1))
+        self.gridLayout.addWidget(self.maxPressureLabel, *(4,0))
+        self.gridLayout.addWidget(self.maxPressureLineEdit, *(4,1))
+        self.gridLayout.addWidget(self.minPressureLabel, *(5,0))
+        self.gridLayout.addWidget(self.minPressureLineEdit, *(5,1))
+        self.gridLayout.addWidget(self.touchedAreaLabel, *(6,0))
+        self.gridLayout.addWidget(self.touchedAreaLineEdit, *(6,1))
+
+        self.setLayout(self.gridLayout)
 
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint) # 关闭问号
@@ -113,8 +157,7 @@ class PressureAnalysisDlg(QDialog):
         self.setWindowTitle("压力分析")
         self.show()
 
-    def getPressureData(self):
-        pressureData = PressureData()
+
 
 
 app = QApplication(sys.argv)
