@@ -85,7 +85,7 @@ class UserInputDlg(QDialog):
         self.setWindowTitle("用户信息录入")
 
     def getAllFromLineEdit(self):
-        '''获得LineEdit里的全部信息'''
+        """获得LineEdit里的全部信息"""
         return self.accountNameLineEdit.text(), self.accountPasswordLineEdit.text(), self.userNameLineEdit.text(),\
                self.sexBox.currentText(), self.ageLineEdit.text(), self.heightLineEdit.text(), self.weightLineEdit.text(),\
                self.phoneNumberLineEdit.text(), self.qqNumberLineEdit.text(), self.collectTimeLineEdit.text(), \

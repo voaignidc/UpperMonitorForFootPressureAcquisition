@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import sys
+import os
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -38,7 +38,7 @@ class PressureData():
             voltageArrRead: 电压, 0-3.300V
         """
         voltageArrRead = []
-        with open("../footPrints/voltageArr.txt", 'r+') as f:
+        with open("./footPrints/voltageArr.txt", 'r+') as f:
             data = f.readline()
             if data != '':
                 for numStr in data.split(', '):
@@ -108,8 +108,8 @@ class PressureDiagram():
 
     def savePressureDiagram(self):
         """保存压强分布图"""
-
-        plt.savefig("pressureDiagram.png")
+        plt.savefig("./footPrints/pressureDiagram.png")
+        plt.close('all')
 
     def drawPressureTimesBar(self):
         """压强分布柱形图"""
@@ -135,41 +135,45 @@ class PressureDiagram():
                 pass
             else:
                 labels.append(str(i)+'k-'+str(i+1)+'k')
-
         self.pieAx.pie(self.pressureDistribution[self.pressureDistribution > 0], labels = labels, autopct='%1.1f%%')
-        self.pieAx.set_title("pressure-times pie")
+        self.pieAx.set_title("pressure% pie")
 
 class PressureAnalysisDlg(QDialog):
-    """压力分析的对话框"""
+    """压强分析的对话框"""
     def __init__(self):
         super().__init__()
         self.setupUi()
-        self.showUi()
-        self.pressureData = PressureData()
-        self.refreshLineEdit()
-        pressureDiagram = PressureDiagram(self.pressureData.pressureDistribution)
-        pressureDiagram.savePressureDiagram()
-        self.showPressureDiagram()
+        self.setupPressureDiagram()
         self.setupLayout()
+        self.showUi()
 
-    def showPressureDiagram(self):
+    def refreshAll(self):
+        """刷新全部 (LineEdit和压强分析图)"""
+        if os.path.exists("./footPrints/voltageArr.txt"):
+            pressureData = PressureData()
+            self.refreshLineEdit(pressureData)
+            pressureDiagram = PressureDiagram(pressureData.pressureDistribution)
+            pressureDiagram.savePressureDiagram()
+            self.refreshPressureDiagram()
+
+    def setupPressureDiagram(self):
+        """初始化压强分析图"""
         self.pressureImage = QImage()
         self.pressureImageLabel = QLabel(self)
-        self.refreshPressureDiagram()
 
     def refreshPressureDiagram(self):
         """刷新压强分析图"""
-        if self.pressureImage.load("./pressureDiagram.png"):
+        if self.pressureImage.load("./footPrints/pressureDiagram.png"):
             self.pressureImageLabel.setPixmap(QPixmap.fromImage(self.pressureImage))
 
-    def refreshLineEdit(self):
-        self.totalForceLineEdit.setText(str(self.pressureData.totalForce))
-        self.averageForceLineEdit.setText(str(self.pressureData.averageForce))
-        self.totalPressureLineEdit.setText(str(self.pressureData.totalPressure))
-        self.averagePressureLineEdit.setText(str(self.pressureData.averagePressure))
-        self.maxPressureLineEdit.setText(str(self.pressureData.maxPressure))
-        self.minPressureLineEdit.setText(str(self.pressureData.minPressure))
-        self.touchedAreaLineEdit.setText(str(self.pressureData.touchedArea))
+    def refreshLineEdit(self, pressureData):
+        self.totalForceLineEdit.setText(str(pressureData.totalForce))
+        self.averageForceLineEdit.setText(str(pressureData.averageForce))
+        self.totalPressureLineEdit.setText(str(pressureData.totalPressure))
+        self.averagePressureLineEdit.setText(str(pressureData.averagePressure))
+        self.maxPressureLineEdit.setText(str(pressureData.maxPressure))
+        self.minPressureLineEdit.setText(str(pressureData.minPressure))
+        self.touchedAreaLineEdit.setText(str(pressureData.touchedArea))
 
     def setupUi(self):
         self.totalForceLabel = QLabel("总压力(N)", self)
@@ -219,20 +223,15 @@ class PressureAnalysisDlg(QDialog):
         mainLayout.addWidget(self.pressureImageLabel)
         self.setLayout(mainLayout)
 
-
     def showUi(self):
         self.setWindowFlags(Qt.WindowCloseButtonHint) # 关闭问号
-        self.setWindowIcon(QIcon("../icons/foot32.png"))
+        self.setWindowIcon(QIcon("./icons/foot32.png"))
         self.setWindowTitle("压力分析")
-        self.show()
 
-
-
-
-app = QApplication(sys.argv)
-app.setQuitOnLastWindowClosed(True)
-
-window = PressureAnalysisDlg()
-window.show()
-
-sys.exit(app.exec_())
+# app = QApplication(sys.argv)
+# app.setQuitOnLastWindowClosed(True)
+#
+# window = PressureAnalysisDlg()
+# window.show()
+#
+# sys.exit(app.exec_())
