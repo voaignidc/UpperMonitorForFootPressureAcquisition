@@ -19,8 +19,8 @@
 * main.py
 
 ## How to build
-*pyinstaller.exe -F -y main.spec
-*pyinstaller.exe --paths D:\Programfiles\Python36\Lib\site-packages\PyInstaller\loader\rthooks -F -y main.spec
+* pyinstaller.exe -F -y main.spec
+* pyinstaller.exe --paths D:\Programfiles\Python36\Lib\site-packages\PyInstaller\loader\rthooks -F -y main.spec
 
 ## Screenshot
 ![Screenshot](https://github.com/voaignidc/UpperMonitorForFootPressureAcquisition/blob/master/screenshot.png)
@@ -49,7 +49,7 @@
 * main.py
 
 ## 打包方法
-*pyinstaller.exe -F -y main.spec
-*pyinstaller.exe --paths D:\Programfiles\Python36\Lib\site-packages\PyInstaller\loader\rthooks -F -y main.spec
+* pyinstaller.exe -F -y main.spec
+* pyinstaller.exe --paths D:\Programfiles\Python36\Lib\site-packages\PyInstaller\loader\rthooks -F -y main.spec
 
 ## 截图
