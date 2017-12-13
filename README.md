@@ -13,12 +13,19 @@
 * Pillow
 * pyserial
 * numpy
+* matplotlib
 
 ## How to run
 * main.py
 
+## How to build
+*pyinstaller.exe -F -y main.spec
+*pyinstaller.exe --paths D:\Programfiles\Python36\Lib\site-packages\PyInstaller\loader\rthooks -F -y main.spec
+
 ## Screenshot
 ![Screenshot](https://github.com/voaignidc/UpperMonitorForFootPressureAcquisition/blob/master/screenshot.png)
+
+
 
 # 足部压力采集上位机
 ## 简介
@@ -36,6 +43,13 @@
 * Pillow
 * pyserial
 * numpy
+* matplotlib
 
 ## 运行方法
 * main.py
+
+## 打包方法
+*pyinstaller.exe -F -y main.spec
+*pyinstaller.exe --paths D:\Programfiles\Python36\Lib\site-packages\PyInstaller\loader\rthooks -F -y main.spec
+
+## 截图
