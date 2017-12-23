@@ -88,6 +88,7 @@ class MainWindow(QMainWindow, QWidget):
         # 连 刷新图像
         self.clearFootImageButton.clicked.connect(self.clearFootImage)
         self.saveFootImageButton.clicked.connect(self.saveFootDataToDataBase)
+        self.loadFootImageButton.clicked.connect(self.loadFootImageButtonPressed)
         self.selectUserBox.activated[int].connect(self.refreshFootImageAndVoltageTxtAfterChangeUserBox) # activated是用户点击
         # QComboBox后才产生的信号,程序改变QComboBox则不产生此信号
         self.showPressureAnalysisButton.clicked.connect(self.showPressureAnalysisDlg)
@@ -139,13 +140,27 @@ class MainWindow(QMainWindow, QWidget):
         self.showUserInputDlgButton.setCheckable(True)
         self.showAdminDataBaseDlgButton = QPushButton("用户管理", self)  # 数据库按钮在这里
         self.showAdminDataBaseDlgButton.setCheckable(True)
+
         self.clearFootImageButton = QPushButton("清除压力图", self)
         self.clearFootImageButton.setCheckable(True)
         self.saveFootImageButton = QPushButton("保存压力图", self)
         self.saveFootImageButton.setCheckable(True)
+        self.loadFootImageButton = QPushButton("读取压力图", self)
+        self.loadFootImageButton.setCheckable(True)
         self.showPressureAnalysisButton = QPushButton("压强分析", self)
         self.showPressureAnalysisButton.setCheckable(True)
 
+        
+    def loadFootImageButtonPressed(self):
+        """读取imgRead.png, 刷新UI上的脚印压力图"""
+        self.loadFootImageButton.setChecked(False)
+        successfullyLoad = False
+        if self.footImage.load("./footPrints/imgRead.png"):
+            self.footImageLabel.setPixmap(QPixmap.fromImage(self.footImage))
+            successfullyLoad = True
+        return successfullyLoad
+        
+        
     def setupUserInputDlg(self):
         """初始化 用户录入 对话框"""
         self.userInputDlg = userInput.UserInputDlg(self.nowAccountName, self.ifNewAccount)
@@ -333,7 +348,7 @@ class MainWindow(QMainWindow, QWidget):
     def setupLayout(self):
         leftSideLayout = QVBoxLayout()
         leftSideLayout.addStretch(1)
-        leftSideLayout.setSpacing(15)
+        leftSideLayout.setSpacing(12)
 
         leftSideLayout.addWidget(self.showUserInputDlgButton)
         leftSideLayout.addWidget(self.showAdminDataBaseDlgButton)
@@ -343,6 +358,7 @@ class MainWindow(QMainWindow, QWidget):
         self.serialPortObject.setupLayout(leftSideLayout)
         leftSideLayout.addWidget(self.clearFootImageButton)
         leftSideLayout.addWidget(self.saveFootImageButton)
+        leftSideLayout.addWidget(self.loadFootImageButton)
         leftSideLayout.addWidget(self.showPressureAnalysisButton)
 
         mainLayout = QHBoxLayout()

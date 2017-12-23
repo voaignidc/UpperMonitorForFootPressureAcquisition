@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 
 class PressureData():
     """计算压力,压强等"""
-    def __init__(self):
+    def __init__(self, txtFileName):
+        self.txtFileName = txtFileName
         self.voltageArr = np.array(self.readVoltageArrFromTxt()) # 电压列表
         self.forceArr = self.voltageArrToForceArr(self.voltageArr) # 压力列表
         self.pressureArr = self.forceArrToPressureArr(self.forceArr) # 压强列表
@@ -38,7 +39,7 @@ class PressureData():
             voltageArrRead: 电压, 0-3.300V
         """
         voltageArrRead = []
-        with open("./footPrints/voltageArr.txt", 'r+') as f:
+        with open(self.txtFileName, 'r+') as f:
             data = f.readline()
             if data != '':
                 for numStr in data.split(', '):
@@ -150,7 +151,7 @@ class PressureAnalysisDlg(QDialog):
     def refreshAll(self):
         """刷新全部 (LineEdit和压强分析图)"""
         if os.path.exists("./footPrints/voltageArr.txt"):
-            pressureData = PressureData()
+            pressureData = PressureData("./footPrints/voltageArr.txt")
             self.refreshLineEdit(pressureData)
             pressureDiagram = PressureDiagram(pressureData.pressureDistribution)
             pressureDiagram.savePressureDiagram()
@@ -197,7 +198,22 @@ class PressureAnalysisDlg(QDialog):
         self.touchedAreaLabel = QLabel("接触面积(cm^2)", self)
         self.touchedAreaLineEdit = QLineEdit(self)
         self.touchedAreaLineEdit.setFixedWidth(100)
+        self.loadVoltageTxtButton = QPushButton("读取电压数据", self)
+        self.loadVoltageTxtButton.setCheckable(True)
+        self.loadVoltageTxtButton.clicked.connect(self.loadVoltageTxtButtonPressed)
 
+    def loadVoltageTxtButtonPressed(self):     
+        self.loadVoltageTxtButton.setChecked(False)
+        if os.path.exists("./footPrints/txtRead.txt"):
+            try:
+                pressureData = PressureData("./footPrints/txtRead.txt")
+                self.refreshLineEdit(pressureData)
+                pressureDiagram = PressureDiagram(pressureData.pressureDistribution)
+                pressureDiagram.savePressureDiagram()
+                self.refreshPressureDiagram()
+            except:
+                pass
+        
     def setupLayout(self):
         self.gridLayout = QGridLayout()
         self.gridLayout.setSpacing(10)
@@ -216,6 +232,7 @@ class PressureAnalysisDlg(QDialog):
         self.gridLayout.addWidget(self.minPressureLineEdit, *(5,1))
         self.gridLayout.addWidget(self.touchedAreaLabel, *(6,0))
         self.gridLayout.addWidget(self.touchedAreaLineEdit, *(6,1))
+        self.gridLayout.addWidget(self.loadVoltageTxtButton, *(7,0))
 
         mainLayout = QHBoxLayout()
         mainLayout.addStretch(1)
