@@ -18,9 +18,10 @@ if getattr(sys, 'frozen', False):
     rootPath = os.path.dirname(sys.executable)
 elif __file__:
     rootPath = os.path.dirname(__file__)  
+pathName = rootPath+"/dataBaseFile"
 fileName = rootPath+"/dataBaseFile/footdata.db"
 print(fileName)
-adminDataBase.connectDataBaseFile(fileName)
+adminDataBase.connectDataBaseFile(pathName, fileName)
 
 class MainWindow(QMainWindow, QWidget):
     """主窗口"""

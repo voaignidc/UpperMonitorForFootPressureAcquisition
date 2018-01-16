@@ -156,9 +156,13 @@ class AdminDataBaseDlg(QDialog):
         self.model.select()
 
 
-def connectDataBaseFile(fileName):
+def connectDataBaseFile(pathName, fileName):
     '''连接数据库文件, 若不存在则创建一个'''
-    create = not QFile.exists(fileName)
+    createPath = not os.path.exists(pathName)
+    if createPath:
+        os.mkdir(pathName)
+    
+    createFile = not QFile.exists(fileName)
     db = QSqlDatabase.addDatabase("QSQLITE") # 连接数据库
     db.setDatabaseName(fileName)
 
@@ -166,7 +170,7 @@ def connectDataBaseFile(fileName):
         QMessageBox.warning(None, "数据库", "Database Error: {0}".format(db.lastError().text()))
         sys.exit(1)
 
-    if create:
+    if createFile:
         query = QSqlQuery()
         query.exec_("""CREATE TABLE footdata (
                 id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,      
